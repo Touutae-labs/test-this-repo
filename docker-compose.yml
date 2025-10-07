@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  backend-interview:
+    image: apemon/backend-interview:latest
+    container_name: backend-interview-app
+    ports:
+      - "3000:3000"
+    environment:
+      - WEBHOOK_URL=http://your-webhook-url
+      - WEBHOOK_SECRET=your-webhook-secret
+      - API_KEY=your-api-key
+      - SUCCESS_TOPUP_STATUS_RATE=0.9
+      - IGNORE_WEBHOOK_RATE=0.1
+    restart: unless-stopped
