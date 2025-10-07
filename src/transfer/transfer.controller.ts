@@ -19,7 +19,7 @@ export class TransferController {
    * Requires authentication
    */
   @Post()
-  async createTransfer(
+  createTransfer(
     @CurrentUser() userId: string,
     @Body() createTransferDto: CreateTransferDto,
   ) {
@@ -32,7 +32,7 @@ export class TransferController {
    * Requires authentication
    */
   @Get('history')
-  async getHistory(@CurrentUser() userId: string) {
+  getHistory(@CurrentUser() userId: string) {
     return this.transferService.getTransferHistory(userId);
   }
 }

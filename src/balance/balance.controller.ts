@@ -27,7 +27,7 @@ export class BalanceController {
    * OPTIONAL: This is a recommended feature
    */
   @Get('history')
-  async getHistory(@CurrentUser() userId: string) {
+  getHistory(@CurrentUser() userId: string) {
     return this.balanceService.getTransactionHistory(userId);
   }
 }

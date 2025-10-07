@@ -1,4 +1,11 @@
-import { Controller, Post, Get, Body, UseGuards, Headers } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Headers,
+} from '@nestjs/common';
 import { TopupService } from './topup.service';
 import { CreateTopupDto } from './dto/create-topup.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
@@ -29,16 +36,16 @@ export class TopupController {
   /**
    * Webhook endpoint for external service notifications
    * POST /topup/webhook
-   * 
+   *
    * CRITICAL: This endpoint should be accessible without authentication
    * but must verify webhook signature for security
    */
   @Post('webhook')
-  async handleWebhook(
+  handleWebhook(
     @Body() payload: any,
     @Headers('x-webhook-signature') signature?: string,
   ) {
-    await this.topupService.handleWebhook(payload, signature);
+    this.topupService.handleWebhook(payload, signature);
     return { success: true };
   }
 

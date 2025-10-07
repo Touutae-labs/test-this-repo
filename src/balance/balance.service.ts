@@ -13,9 +13,9 @@ export class BalanceService {
   /**
    * Get user's current balance
    */
-  async getBalance(userId: string): Promise<{ balance: number; userId: string }> {
+  getBalance(userId: string): { balance: number; userId: string } {
     const user = this.databaseService.findUserById(userId);
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -30,9 +30,9 @@ export class BalanceService {
    * Get user's transaction history
    * OPTIONAL: This is a recommended feature
    */
-  async getTransactionHistory(userId: string): Promise<Transaction[]> {
+  getTransactionHistory(userId: string): Transaction[] {
     const user = this.databaseService.findUserById(userId);
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }

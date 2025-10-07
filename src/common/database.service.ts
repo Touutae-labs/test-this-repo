@@ -6,10 +6,10 @@ import { Transfer } from '../transfer/entities/transfer.entity';
 
 /**
  * In-Memory Database Service
- * 
+ *
  * NOTE: This is a simple in-memory implementation for demonstration.
  * For production, replace this with a proper database (PostgreSQL, MySQL, MongoDB, etc.)
- * 
+ *
  * CRITICAL: Implement proper data persistence layer
  */
 @Injectable()

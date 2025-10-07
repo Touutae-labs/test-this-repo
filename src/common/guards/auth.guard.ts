@@ -8,9 +8,9 @@ import { DatabaseService } from '../database.service';
 
 /**
  * Authentication Guard
- * 
+ *
  * Validates API key in the request header
- * 
+ *
  * CRITICAL: Implement proper authentication mechanism
  * - Consider JWT tokens instead of simple API keys
  * - Add token expiration

@@ -1,17 +1,26 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseService } from '../common/database.service';
 import { CreateTopupDto } from './dto/create-topup.dto';
 import { Topup, TopupStatus } from './entities/topup.entity';
-import { Transaction, TransactionType } from '../balance/entities/transaction.entity';
+import {
+  Transaction,
+  TransactionType,
+} from '../balance/entities/transaction.entity';
 import { randomUUID } from 'crypto';
+// Uncomment when implementing external service integration:
+// import { firstValueFrom } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 
 /**
  * Top-up Service
  * Handles top-up functionality with external service integration
- * 
+ *
  * CRITICAL PARTS TO IMPLEMENT:
  * 1. processExternalTopup() - Integrate with the external payment service
  * 2. handleWebhook() - Process webhook notifications from external service
@@ -29,12 +38,15 @@ export class TopupService {
 
   /**
    * Initiate a top-up request
-   * 
+   *
    * CRITICAL: Implement proper integration with external service
    */
-  async createTopup(userId: string, createTopupDto: CreateTopupDto): Promise<Topup> {
+  async createTopup(
+    userId: string,
+    createTopupDto: CreateTopupDto,
+  ): Promise<Topup> {
     const user = this.databaseService.findUserById(userId);
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -53,7 +65,7 @@ export class TopupService {
     // CRITICAL: Implement external service integration
     // Process the top-up with external payment service
     try {
-      await this.processExternalTopup(topup);
+      this.processExternalTopup(topup);
     } catch (error) {
       // Update status to failed if external service call fails
       topup.status = TopupStatus.FAILED;
@@ -67,21 +79,24 @@ export class TopupService {
 
   /**
    * Process top-up with external payment service
-   * 
+   *
    * CRITICAL: IMPLEMENT THIS METHOD
-   * 
+   *
    * Steps to implement:
    * 1. Get external service URL and API key from environment
    * 2. Make HTTP request to external service API
    * 3. Handle response and update topup status
    * 4. See Swagger docs at http://localhost:3000/doc for API details
    */
-  private async processExternalTopup(topup: Topup): Promise<void> {
+  private processExternalTopup(topup: Topup): void {
     // CRITICAL: Implement external service call
     // Example implementation structure:
-    
-    const externalServiceUrl = this.configService.get<string>('EXTERNAL_SERVICE_URL', 'http://localhost:3000');
-    const apiKey = this.configService.get<string>('EXTERNAL_API_KEY');
+
+    const _externalServiceUrl = this.configService.get<string>(
+      'EXTERNAL_SERVICE_URL',
+      'http://localhost:3000',
+    );
+    const _apiKey = this.configService.get<string>('EXTERNAL_API_KEY');
 
     // TODO: Make API call to external service
     // const response = await firstValueFrom(
@@ -100,15 +115,17 @@ export class TopupService {
     // topup.updatedAt = new Date();
     // this.databaseService.saveTopup(topup);
 
-    console.log(`[CRITICAL] Implement external service integration for topup ${topup.id}`);
+    console.log(
+      `[CRITICAL] Implement external service integration for topup ${topup.id}`,
+    );
     // Note: Status will be updated when webhook is received
   }
 
   /**
    * Handle webhook notification from external service
-   * 
+   *
    * CRITICAL: IMPLEMENT THIS METHOD
-   * 
+   *
    * Steps to implement:
    * 1. Verify webhook signature using WEBHOOK_SECRET
    * 2. Extract transaction details from webhook payload
@@ -116,7 +133,7 @@ export class TopupService {
    * 4. Update user balance if top-up is successful
    * 5. Record transaction in history
    */
-  async handleWebhook(payload: any, signature?: string): Promise<void> {
+  handleWebhook(payload: any, signature?: string): void {
     // CRITICAL: Implement webhook signature verification
     // const isValid = this.verifyWebhookSignature(payload, signature);
     // if (!isValid) {
@@ -126,6 +143,7 @@ export class TopupService {
     // CRITICAL: Implement webhook processing logic
     console.log('[CRITICAL] Implement webhook handling logic');
     console.log('Webhook payload:', payload);
+    console.log('Webhook signature:', signature);
 
     // TODO: Extract topup ID from payload
     // TODO: Find topup in database
@@ -136,29 +154,29 @@ export class TopupService {
 
   /**
    * Verify webhook signature
-   * 
+   *
    * CRITICAL: IMPLEMENT THIS METHOD
    * Use WEBHOOK_SECRET from environment to verify signature
    */
-  private verifyWebhookSignature(payload: any, signature: string): boolean {
+  private verifyWebhookSignature(_payload: any, _signature: string): boolean {
     // CRITICAL: Implement signature verification
-    const webhookSecret = this.configService.get<string>('WEBHOOK_SECRET');
-    
+    const _webhookSecret = this.configService.get<string>('WEBHOOK_SECRET');
+
     // TODO: Implement HMAC signature verification
     // Example: compare HMAC-SHA256 of payload with signature
-    
+
     console.log('[CRITICAL] Implement webhook signature verification');
     return true; // Placeholder
   }
 
   /**
    * Complete a top-up (called after webhook confirmation)
-   * 
+   *
    * CRITICAL: Implement proper transaction handling with atomicity
    */
-  async completeTopup(topupId: string, externalTransactionId: string): Promise<void> {
+  completeTopup(topupId: string, externalTransactionId: string): void {
     const topup = this.databaseService.findTopupById(topupId);
-    
+
     if (!topup) {
       throw new NotFoundException('Top-up not found');
     }
@@ -168,7 +186,7 @@ export class TopupService {
     }
 
     const user = this.databaseService.findUserById(topup.userId);
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -204,9 +222,9 @@ export class TopupService {
   /**
    * Get user's top-up history
    */
-  async getTopupHistory(userId: string): Promise<Topup[]> {
+  getTopupHistory(userId: string): Topup[] {
     const user = this.databaseService.findUserById(userId);
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }

@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DatabaseService } from '../common/database.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
@@ -9,7 +13,7 @@ import { randomUUID } from 'crypto';
 /**
  * Users Service
  * Handles user management logic
- * 
+ *
  * CRITICAL PARTS TO IMPLEMENT:
  * 1. Proper password hashing validation in comparePassword()
  * 2. Secure API key generation mechanism in generateApiKey()
@@ -23,12 +27,16 @@ export class UsersService {
 
   /**
    * Register a new user
-   * 
+   *
    * CRITICAL: Implement proper validation and error handling
    */
-  async register(createUserDto: CreateUserDto): Promise<{ user: User; apiKey: string }> {
-    const existingUser = this.databaseService.findUserByUsername(createUserDto.username);
-    
+  async register(
+    createUserDto: CreateUserDto,
+  ): Promise<{ user: User; apiKey: string }> {
+    const existingUser = this.databaseService.findUserByUsername(
+      createUserDto.username,
+    );
+
     if (existingUser) {
       throw new ConflictException('Username already exists');
     }
@@ -54,6 +62,7 @@ export class UsersService {
     this.databaseService.saveApiKey(apiKey, user.id);
 
     // Remove password from response
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
 
     return { user: userWithoutPassword as User, apiKey };
@@ -61,7 +70,7 @@ export class UsersService {
 
   /**
    * Login user
-   * 
+   *
    * CRITICAL: Implement proper authentication logic
    */
   async login(loginDto: LoginDto): Promise<{ user: User; apiKey: string }> {
@@ -72,7 +81,10 @@ export class UsersService {
     }
 
     // CRITICAL: Implement proper password comparison
-    const isPasswordValid = await this.comparePassword(loginDto.password, user.password);
+    const isPasswordValid = await this.comparePassword(
+      loginDto.password,
+      user.password,
+    );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -84,6 +96,7 @@ export class UsersService {
     this.databaseService.saveApiKey(apiKey, user.id);
 
     // Remove password from response
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
 
     return { user: userWithoutPassword as User, apiKey };
@@ -92,23 +105,26 @@ export class UsersService {
   /**
    * Get user by ID
    */
-  async findById(userId: string): Promise<User | undefined> {
+  findById(userId: string): User | undefined {
     return this.databaseService.findUserById(userId);
   }
 
   /**
    * Compare password with hash
-   * 
+   *
    * CRITICAL: Implement this method
    */
-  private async comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+  private async comparePassword(
+    plainPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
     // CRITICAL: Implement password comparison logic
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 
   /**
    * Generate API key
-   * 
+   *
    * CRITICAL: Implement secure API key generation
    * Consider using JWT tokens with expiration instead
    */

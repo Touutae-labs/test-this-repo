@@ -1,14 +1,21 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { DatabaseService } from '../common/database.service';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { Transfer } from './entities/transfer.entity';
-import { Transaction, TransactionType } from '../balance/entities/transaction.entity';
+import {
+  Transaction,
+  TransactionType,
+} from '../balance/entities/transaction.entity';
 import { randomUUID } from 'crypto';
 
 /**
  * Transfer Service
  * Handles money transfers between users
- * 
+ *
  * CRITICAL PARTS TO IMPLEMENT:
  * 1. validateTransfer() - Implement comprehensive transfer validation
  * 2. Add transaction atomicity (use database transactions)
@@ -22,15 +29,15 @@ export class TransferService {
 
   /**
    * Create a transfer between users
-   * 
+   *
    * CRITICAL: Implement proper transaction handling with atomicity
    */
-  async createTransfer(
+  createTransfer(
     fromUserId: string,
     createTransferDto: CreateTransferDto,
-  ): Promise<Transfer> {
+  ): Transfer {
     const fromUser = this.databaseService.findUserById(fromUserId);
-    
+
     if (!fromUser) {
       throw new NotFoundException('Sender not found');
     }
@@ -52,7 +59,7 @@ export class TransferService {
 
     // CRITICAL: In a real database, this should be an atomic transaction
     // If any step fails, all changes should be rolled back
-    
+
     // Deduct from sender
     const senderBalanceBefore = fromUser.balance;
     fromUser.balance -= createTransferDto.amount;
@@ -107,9 +114,9 @@ export class TransferService {
 
   /**
    * Validate transfer request
-   * 
+   *
    * CRITICAL: IMPLEMENT COMPREHENSIVE VALIDATION
-   * 
+   *
    * Add validations for:
    * 1. Sufficient balance
    * 2. Transfer limits (daily/monthly)
@@ -118,7 +125,7 @@ export class TransferService {
    */
   private validateTransfer(senderBalance: number, amount: number): void {
     // CRITICAL: Implement comprehensive validation
-    
+
     if (amount <= 0) {
       throw new BadRequestException('Transfer amount must be positive');
     }
@@ -146,9 +153,9 @@ export class TransferService {
   /**
    * Get user's transfer history
    */
-  async getTransferHistory(userId: string): Promise<Transfer[]> {
+  getTransferHistory(userId: string): Transfer[] {
     const user = this.databaseService.findUserById(userId);
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
