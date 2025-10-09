@@ -77,20 +77,20 @@ export class TransferService {
    *   return transfer;
    * }
    */
-  createTransfer(
+  async createTransfer(
     fromUserId: string,
     createTransferDto: CreateTransferDto,
-  ): Transfer {
+  ): Promise<Transfer> {
     // TODO: Add idempotency check here using IdempotencyService
     // TODO: See example implementation in comments above
 
-    const fromUser = this.databaseService.findUserById(fromUserId);
+    const fromUser = await this.databaseService.userRepository.findById(fromUserId);
 
     if (!fromUser) {
       throw new NotFoundException('Sender not found');
     }
 
-    const toUser = this.databaseService.findUserByUsername(
+    const toUser = await this.databaseService.userRepository.findByUsername(
       createTransferDto.recipientUsername,
     );
 
@@ -113,13 +113,13 @@ export class TransferService {
     const senderBalanceBefore = fromUser.balance;
     fromUser.balance -= createTransferDto.amount;
     fromUser.updatedAt = new Date();
-    this.databaseService.saveUser(fromUser);
+    await this.databaseService.userRepository.save(fromUser);
 
     // Add to recipient
     const recipientBalanceBefore = toUser.balance;
     toUser.balance += createTransferDto.amount;
     toUser.updatedAt = new Date();
-    this.databaseService.saveUser(toUser);
+    await this.databaseService.userRepository.save(toUser);
 
     // Create transfer record
     const transfer = new Transfer({
@@ -129,7 +129,7 @@ export class TransferService {
       amount: createTransferDto.amount,
       createdAt: new Date(),
     });
-    this.databaseService.saveTransfer(transfer);
+    await this.databaseService.transferRepository.save(transfer);
 
     // Record transactions for both users
     const senderTransaction = new Transaction({
@@ -143,7 +143,7 @@ export class TransferService {
       metadata: { transferId: transfer.id, recipientId: toUser.id },
       createdAt: new Date(),
     });
-    this.databaseService.saveTransaction(senderTransaction);
+    await this.databaseService.transactionRepository.save(senderTransaction);
 
     const recipientTransaction = new Transaction({
       id: randomUUID(),
@@ -156,7 +156,7 @@ export class TransferService {
       metadata: { transferId: transfer.id, senderId: fromUser.id },
       createdAt: new Date(),
     });
-    this.databaseService.saveTransaction(recipientTransaction);
+    await this.databaseService.transactionRepository.save(recipientTransaction);
 
     return transfer;
   }
@@ -202,13 +202,13 @@ export class TransferService {
   /**
    * Get user's transfer history
    */
-  getTransferHistory(userId: string): Transfer[] {
-    const user = this.databaseService.findUserById(userId);
+  async getTransferHistory(userId: string): Promise<Transfer[]> {
+    const user = await this.databaseService.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return this.databaseService.findTransfersByUserId(userId);
+    return this.databaseService.transferRepository.findByUserId(userId);
   }
 }

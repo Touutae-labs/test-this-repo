@@ -47,7 +47,7 @@ export class TopupService {
     userId: string,
     createTopupDto: CreateTopupDto,
   ): Promise<Topup> {
-    const user = this.databaseService.findUserById(userId);
+    const user = await this.databaseService.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -62,7 +62,7 @@ export class TopupService {
       updatedAt: new Date(),
     });
 
-    this.databaseService.saveTopup(topup);
+    await this.databaseService.topupRepository.save(topup);
 
     // CRITICAL: Implement external service integration
     // Process the top-up with external payment service
@@ -72,7 +72,7 @@ export class TopupService {
       // Update status to failed if external service call fails
       topup.status = TopupStatus.FAILED;
       topup.updatedAt = new Date();
-      this.databaseService.saveTopup(topup);
+      await this.databaseService.topupRepository.save(topup);
       throw error;
     }
 
@@ -219,8 +219,8 @@ export class TopupService {
    *
    * CRITICAL: Implement proper transaction handling with atomicity
    */
-  completeTopup(topupId: string, externalTransactionId: string): void {
-    const topup = this.databaseService.findTopupById(topupId);
+  async completeTopup(topupId: string, externalTransactionId: string): Promise<void> {
+    const topup = await this.databaseService.topupRepository.findById(topupId);
 
     if (!topup) {
       throw new NotFoundException('Top-up not found');
@@ -230,7 +230,7 @@ export class TopupService {
       throw new BadRequestException('Top-up is not in pending status');
     }
 
-    const user = this.databaseService.findUserById(topup.userId);
+    const user = await this.databaseService.userRepository.findById(topup.userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -241,13 +241,13 @@ export class TopupService {
     const balanceBefore = user.balance;
     user.balance += topup.amount;
     user.updatedAt = new Date();
-    this.databaseService.saveUser(user);
+    await this.databaseService.userRepository.save(user);
 
     // Update topup status
     topup.status = TopupStatus.SUCCESS;
     topup.externalTransactionId = externalTransactionId;
     topup.updatedAt = new Date();
-    this.databaseService.saveTopup(topup);
+    await this.databaseService.topupRepository.save(topup);
 
     // Record transaction
     const transaction = new Transaction({
@@ -261,19 +261,19 @@ export class TopupService {
       metadata: { topupId, externalTransactionId },
       createdAt: new Date(),
     });
-    this.databaseService.saveTransaction(transaction);
+    await this.databaseService.transactionRepository.save(transaction);
   }
 
   /**
    * Get user's top-up history
    */
-  getTopupHistory(userId: string): Topup[] {
-    const user = this.databaseService.findUserById(userId);
+  async getTopupHistory(userId: string): Promise<Topup[]> {
+    const user = await this.databaseService.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return this.databaseService.findTopupsByUserId(userId);
+    return this.databaseService.topupRepository.findByUserId(userId);
   }
 }

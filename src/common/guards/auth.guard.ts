@@ -21,7 +21,7 @@ import { DatabaseService } from '../database.service';
 export class AuthGuard implements CanActivate {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const apiKey = request.headers['x-api-key'];
 
@@ -29,7 +29,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('API key is required');
     }
 
-    const userId = this.databaseService.findUserIdByApiKey(apiKey);
+    const userId = await this.databaseService.apiKeyRepository.findUserIdByApiKey(apiKey);
 
     if (!userId) {
       throw new UnauthorizedException('Invalid API key');

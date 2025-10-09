@@ -33,7 +33,7 @@ export class UsersService {
   async register(
     createUserDto: CreateUserDto,
   ): Promise<{ user: User; apiKey: string }> {
-    const existingUser = this.databaseService.findUserByUsername(
+    const existingUser = await this.databaseService.userRepository.findByUsername(
       createUserDto.username,
     );
 
@@ -54,12 +54,14 @@ export class UsersService {
       updatedAt: new Date(),
     });
 
-    this.databaseService.saveUser(user);
+    await this.databaseService.userRepository.save(user);
 
     // Generate API key for authentication
     // CRITICAL: Implement secure API key generation
     const apiKey = this.generateApiKey();
-    this.databaseService.saveApiKey(apiKey, user.id);
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30); // 30 days expiration
+    await this.databaseService.apiKeyRepository.save(apiKey, user.id, expiresAt);
 
     // Remove password from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -74,7 +76,7 @@ export class UsersService {
    * CRITICAL: Implement proper authentication logic
    */
   async login(loginDto: LoginDto): Promise<{ user: User; apiKey: string }> {
-    const user = this.databaseService.findUserByUsername(loginDto.username);
+    const user = await this.databaseService.userRepository.findByUsername(loginDto.username);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -93,7 +95,9 @@ export class UsersService {
     // Generate new API key
     // CRITICAL: Consider using JWT tokens instead
     const apiKey = this.generateApiKey();
-    this.databaseService.saveApiKey(apiKey, user.id);
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30); // 30 days expiration
+    await this.databaseService.apiKeyRepository.save(apiKey, user.id, expiresAt);
 
     // Remove password from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -105,8 +109,8 @@ export class UsersService {
   /**
    * Get user by ID
    */
-  findById(userId: string): User | undefined {
-    return this.databaseService.findUserById(userId);
+  async findById(userId: string): Promise<User | undefined> {
+    return this.databaseService.userRepository.findById(userId);
   }
 
   /**
