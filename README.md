@@ -73,7 +73,10 @@ npm run start:dev
 
 The application will be available at `http://localhost:8080`
 
-**📚 For detailed setup and testing instructions, see [SETUP.md](./SETUP.md)**
+**📚 Documentation:**
+- [SETUP.md](./SETUP.md) - Detailed setup and API documentation
+- [TESTING_GUIDE.md](./TESTING_GUIDE.md) - **NEW**: Manual API testing with `.http` file
+- [api-tests.http](./api-tests.http) - **NEW**: Ready-to-use HTTP requests for all endpoints
 
 ## 🎉 NEW: Idempotency & Database Setup
 

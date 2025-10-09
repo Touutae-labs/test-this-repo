@@ -58,6 +58,18 @@ The backend will be available at: http://localhost:8080
 
 ## 🧪 Testing the API
 
+### Quick Testing with .http File
+
+**NEW**: Use the provided `api-tests.http` file for easy manual testing!
+
+1. Install **REST Client** extension for VS Code
+2. Open `api-tests.http`
+3. Click "Send Request" above any request
+
+**See [TESTING_GUIDE.md](./TESTING_GUIDE.md) for complete testing instructions.**
+
+### Manual Testing with cURL
+
 ### 1. Register a User
 
 ```bash
