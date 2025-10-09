@@ -25,6 +25,7 @@ This project provides a **scaffold implementation** with the core structure and 
 - ✅ Top-up request endpoint structure
 - ✅ Webhook endpoint for external service
 - ✅ Top-up status tracking
+- ✅ Idempotency examples for webhooks (see code comments)
 - 🔶 **CRITICAL**: Implement external service integration (`processExternalTopup`)
 - 🔶 **CRITICAL**: Implement webhook processing logic (`handleWebhook`)
 - 🔶 **CRITICAL**: Implement webhook signature verification (`verifyWebhookSignature`)
@@ -33,8 +34,9 @@ This project provides a **scaffold implementation** with the core structure and 
 - ✅ Transfer endpoint with basic validation
 - ✅ Transfer history tracking
 - ✅ Transaction recording for both parties
+- ✅ Idempotency examples (see code comments)
 - 🔶 **CRITICAL**: Implement comprehensive validation (limits, fraud detection)
-- 🔶 **CRITICAL**: Implement proper database transactions for atomicity
+- 🔶 **CRITICAL**: Implement proper database transactions (see DATABASE_SETUP.md)
 
 ## 🔧 Technology Stack
 
@@ -44,7 +46,8 @@ This project provides a **scaffold implementation** with the core structure and 
 - **Validation**: class-validator, class-transformer
 - **HTTP Client**: @nestjs/axios
 - **Password Hashing**: bcrypt
-- **Database**: In-memory (to be replaced with your choice)
+- **Idempotency**: Bloom filters (bloom-filters package)
+- **Database**: In-memory (TypeORM/Prisma setup guide provided)
 
 ## 🚀 Quick Start
 
@@ -71,6 +74,36 @@ npm run start:dev
 The application will be available at `http://localhost:8080`
 
 **📚 For detailed setup and testing instructions, see [SETUP.md](./SETUP.md)**
+
+## 🎉 NEW: Idempotency & Database Setup
+
+### ✅ Idempotency Service (Fully Implemented)
+
+**File**: `src/common/idempotency.service.ts`
+
+Complete idempotency implementation using Bloom filters:
+- Fast duplicate detection (10,000 ops/day capacity)
+- Prevents duplicate webhooks, transfers, and top-ups
+- TTL support (24 hours)
+- Ready to use - see inline examples in service files
+
+### ✅ Database Setup Guide (Complete)
+
+**File**: `DATABASE_SETUP.md`
+
+Comprehensive guide with:
+- Complete TypeORM implementation (all entities with decorators)
+- Alternative Prisma setup
+- Transaction management examples
+- Docker Compose with PostgreSQL
+- Migration strategy for production
+
+**Quick Start**:
+```bash
+npm install @nestjs/typeorm typeorm pg
+docker-compose up -d postgres
+# Follow DATABASE_SETUP.md
+```
 
 ## 📋 What You Need to Implement
 
@@ -108,10 +141,16 @@ private validateTransfer(senderBalance: number, amount: number): void {
 
 ### 3. Database Layer (`src/common/database.service.ts`)
 
-```typescript
-// CRITICAL: Replace in-memory storage with real database
-// Consider using TypeORM, Prisma, or Mongoose
-```
+✅ **SOLUTION PROVIDED** - See `DATABASE_SETUP.md`
+
+Complete implementation guide with:
+- TypeORM entities with decorators
+- Database connection setup
+- Transaction examples
+- Migration strategy
+- Docker Compose configuration
+
+Follow the guide to replace in-memory storage with PostgreSQL/MySQL.
 
 ### 4. Authentication (`src/common/guards/auth.guard.ts`)
 

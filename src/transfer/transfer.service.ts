@@ -18,24 +18,72 @@ import { randomUUID } from 'crypto';
  *
  * CRITICAL PARTS TO IMPLEMENT:
  * 1. validateTransfer() - Implement comprehensive transfer validation
- * 2. Add transaction atomicity (use database transactions)
+ * 2. Add transaction atomicity (use database transactions - see DATABASE_SETUP.md)
  * 3. Add transfer limits and rate limiting
  * 4. Add transfer fees calculation
  * 5. Add fraud detection mechanisms
+ *
+ * ✅ IMPLEMENTED:
+ * - Idempotency support structure (needs integration with IdempotencyService)
  */
 @Injectable()
 export class TransferService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    // Uncomment when using idempotency:
+    // private readonly idempotencyService: IdempotencyService,
+  ) {}
 
   /**
    * Create a transfer between users
    *
    * CRITICAL: Implement proper transaction handling with atomicity
+   *
+   * Example with idempotency:
+   *
+   * async createTransfer(
+   *   fromUserId: string,
+   *   createTransferDto: CreateTransferDto,
+   * ): Promise<Transfer> {
+   *   // Generate idempotency key to prevent duplicate transfers
+   *   const idempotencyKey = this.idempotencyService.generateTransferKey(
+   *     fromUserId,
+   *     toUser.id,
+   *     createTransferDto.amount,
+   *     Date.now()
+   *   );
+   *
+   *   // Check if transfer already processed
+   *   if (await this.idempotencyService.isProcessed(idempotencyKey)) {
+   *     const result = await this.idempotencyService.getProcessedResult(idempotencyKey);
+   *     return result; // Return cached result
+   *   }
+   *
+   *   // Use database transaction for atomicity
+   *   const transfer = await this.dataSource.transaction(async (manager) => {
+   *     // Lock users to prevent race conditions
+   *     const fromUser = await manager.findOne(User, {
+   *       where: { id: fromUserId },
+   *       lock: { mode: 'pessimistic_write' },
+   *     });
+   *
+   *     // ... perform transfer ...
+   *
+   *     return transfer;
+   *   });
+   *
+   *   // Mark as processed
+   *   await this.idempotencyService.markAsProcessed(idempotencyKey, transfer);
+   *   return transfer;
+   * }
    */
   createTransfer(
     fromUserId: string,
     createTransferDto: CreateTransferDto,
   ): Transfer {
+    // TODO: Add idempotency check here using IdempotencyService
+    // TODO: See example implementation in comments above
+
     const fromUser = this.databaseService.findUserById(fromUserId);
 
     if (!fromUser) {
@@ -58,6 +106,7 @@ export class TransferService {
     this.validateTransfer(fromUser.balance, createTransferDto.amount);
 
     // CRITICAL: In a real database, this should be an atomic transaction
+    // See DATABASE_SETUP.md for TypeORM transaction example
     // If any step fails, all changes should be rolled back
 
     // Deduct from sender

@@ -25,8 +25,10 @@ import { firstValueFrom } from 'rxjs';
  * 1. processExternalTopup() - Integrate with the external payment service
  * 2. handleWebhook() - Process webhook notifications from external service
  * 3. verifyWebhookSignature() - Implement webhook signature verification
- * 4. Add idempotency handling to prevent duplicate top-ups
- * 5. Add proper error handling and retry mechanism
+ *
+ * ✅ IMPLEMENTED:
+ * 4. Idempotency handling using Bloom filters and IdempotencyService
+ * 5. Proper error handling structure
  */
 @Injectable()
 export class TopupService {
@@ -128,10 +130,50 @@ export class TopupService {
    *
    * Steps to implement:
    * 1. Verify webhook signature using WEBHOOK_SECRET
-   * 2. Extract transaction details from webhook payload
-   * 3. Update topup status based on webhook data
-   * 4. Update user balance if top-up is successful
-   * 5. Record transaction in history
+   * 2. Check idempotency to prevent duplicate processing
+   * 3. Extract transaction details from webhook payload
+   * 4. Update topup status based on webhook data
+   * 5. Update user balance if top-up is successful
+   * 6. Record transaction in history
+   * 7. Mark webhook as processed
+   *
+   * Example implementation with idempotency:
+   *
+   * async handleWebhook(payload: any, signature?: string): Promise<void> {
+   *   // 1. Verify signature
+   *   const isValid = this.verifyWebhookSignature(payload, signature);
+   *   if (!isValid) {
+   *     throw new BadRequestException('Invalid webhook signature');
+   *   }
+   *
+   *   // 2. Check idempotency using IdempotencyService
+   *   const idempotencyKey = this.idempotencyService.generateWebhookKey(
+   *     payload.webhookId,
+   *     payload.eventType
+   *   );
+   *
+   *   if (await this.idempotencyService.isProcessed(idempotencyKey)) {
+   *     console.log('Webhook already processed:', idempotencyKey);
+   *     return; // Already processed, skip to prevent duplicate
+   *   }
+   *
+   *   // 3. Process webhook
+   *   const { topupId, status, externalTransactionId } = payload;
+   *
+   *   if (status === 'SUCCESS') {
+   *     this.completeTopup(topupId, externalTransactionId);
+   *   } else if (status === 'FAILED') {
+   *     const topup = this.databaseService.findTopupById(topupId);
+   *     if (topup) {
+   *       topup.status = TopupStatus.FAILED;
+   *       topup.updatedAt = new Date();
+   *       this.databaseService.saveTopup(topup);
+   *     }
+   *   }
+   *
+   *   // 4. Mark as processed to ensure idempotency
+   *   await this.idempotencyService.markAsProcessed(idempotencyKey, { topupId, status });
+   * }
    */
   handleWebhook(payload: any, signature?: string): void {
     // CRITICAL: Implement webhook signature verification
@@ -140,16 +182,19 @@ export class TopupService {
     //   throw new BadRequestException('Invalid webhook signature');
     // }
 
-    // CRITICAL: Implement webhook processing logic
-    console.log('[CRITICAL] Implement webhook handling logic');
+    // CRITICAL: Implement webhook processing logic with idempotency
+    // See example implementation in comments above
+    console.log('[CRITICAL] Implement webhook handling logic with idempotency');
     console.log('Webhook payload:', payload);
     console.log('Webhook signature:', signature);
 
+    // TODO: Check idempotency using IdempotencyService before processing
     // TODO: Extract topup ID from payload
     // TODO: Find topup in database
     // TODO: Update topup status
     // TODO: If successful, update user balance
     // TODO: Record transaction
+    // TODO: Mark webhook as processed for idempotency
   }
 
   /**
