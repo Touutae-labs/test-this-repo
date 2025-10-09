@@ -1,11 +1,11 @@
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { DatabaseService } from './database.service';
 import { IdempotencyService } from './idempotency.service';
 
 /**
  * Common Module
  * Provides shared services globally:
- * - DatabaseService: In-memory storage (replace with TypeORM - see DATABASE_SETUP.md)
+ * - DatabaseService: SQLlite3 database connection and operations
  * - IdempotencyService: Prevents duplicate operations using Bloom filters
  */
 @Global()
