@@ -13,7 +13,9 @@ export class BalanceService {
   /**
    * Get user's current balance
    */
-  async getBalance(userId: string): Promise<{ balance: number; userId: string }> {
+  async getBalance(
+    userId: string,
+  ): Promise<{ balance: number; userId: string }> {
     const user = await this.databaseService.userRepository.findById(userId);
 
     if (!user) {

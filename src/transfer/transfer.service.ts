@@ -84,7 +84,8 @@ export class TransferService {
     // TODO: Add idempotency check here using IdempotencyService
     // TODO: See example implementation in comments above
 
-    const fromUser = await this.databaseService.userRepository.findById(fromUserId);
+    const fromUser =
+      await this.databaseService.userRepository.findById(fromUserId);
 
     if (!fromUser) {
       throw new NotFoundException('Sender not found');
@@ -128,6 +129,7 @@ export class TransferService {
       toUserId: toUser.id,
       amount: createTransferDto.amount,
       createdAt: new Date(),
+      updatedAt: new Date(),
     });
     await this.databaseService.transferRepository.save(transfer);
 

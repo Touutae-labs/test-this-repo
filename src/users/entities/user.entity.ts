@@ -7,6 +7,8 @@ export class User {
   username: string;
   password: string; // Should be hashed
   balance: number;
+  failedLoginAttempts?: number;
+  lockedUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
 

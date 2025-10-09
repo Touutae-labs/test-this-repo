@@ -11,14 +11,29 @@ export class TopupRepository {
   constructor(
     private readonly dbGet: (sql: string, params?: any[]) => Promise<any>,
     private readonly dbAll: (sql: string, params?: any[]) => Promise<any[]>,
-    private readonly dbRun: (sql: string, params?: any[]) => Promise<sqlite3.RunResult>,
+    private readonly dbRun: (
+      sql: string,
+      params?: any[],
+    ) => Promise<sqlite3.RunResult>,
   ) {}
 
   async save(topup: Topup): Promise<Topup> {
-    await this.dbRun(`
+    await this.dbRun(
+      `
       INSERT OR REPLACE INTO topups (id, user_id, amount, status, external_transaction_id, idempotency_key, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [topup.id, topup.userId, topup.amount, topup.status, topup.externalTransactionId, topup.idempotencyKey, topup.createdAt.toISOString(), topup.updatedAt.toISOString()]);
+    `,
+      [
+        topup.id,
+        topup.userId,
+        topup.amount,
+        topup.status,
+        topup.externalTransactionId,
+        topup.idempotencyKey,
+        topup.createdAt.toISOString(),
+        topup.updatedAt.toISOString(),
+      ],
+    );
     return topup;
   }
 
@@ -28,12 +43,18 @@ export class TopupRepository {
   }
 
   async findByUserId(userId: string): Promise<Topup[]> {
-    const rows = await this.dbAll('SELECT * FROM topups WHERE user_id = ? ORDER BY created_at DESC', [userId]);
-    return rows.map(this.mapRowToTopup);
+    const rows = await this.dbAll(
+      'SELECT * FROM topups WHERE user_id = ? ORDER BY created_at DESC',
+      [userId],
+    );
+    return rows.map((row) => this.mapRowToTopup(row));
   }
 
   async findByIdempotencyKey(key: string): Promise<Topup | undefined> {
-    const row = await this.dbGet('SELECT * FROM topups WHERE idempotency_key = ?', [key]);
+    const row = await this.dbGet(
+      'SELECT * FROM topups WHERE idempotency_key = ?',
+      [key],
+    );
     return row ? this.mapRowToTopup(row) : undefined;
   }
 

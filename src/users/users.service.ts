@@ -33,9 +33,10 @@ export class UsersService {
   async register(
     createUserDto: CreateUserDto,
   ): Promise<{ user: User; apiKey: string }> {
-    const existingUser = await this.databaseService.userRepository.findByUsername(
-      createUserDto.username,
-    );
+    const existingUser =
+      await this.databaseService.userRepository.findByUsername(
+        createUserDto.username,
+      );
 
     if (existingUser) {
       throw new ConflictException('Username already exists');
@@ -61,7 +62,11 @@ export class UsersService {
     const apiKey = this.generateApiKey();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days expiration
-    await this.databaseService.apiKeyRepository.save(apiKey, user.id, expiresAt);
+    await this.databaseService.apiKeyRepository.save(
+      apiKey,
+      user.id,
+      expiresAt,
+    );
 
     // Remove password from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -76,7 +81,9 @@ export class UsersService {
    * CRITICAL: Implement proper authentication logic
    */
   async login(loginDto: LoginDto): Promise<{ user: User; apiKey: string }> {
-    const user = await this.databaseService.userRepository.findByUsername(loginDto.username);
+    const user = await this.databaseService.userRepository.findByUsername(
+      loginDto.username,
+    );
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -97,7 +104,11 @@ export class UsersService {
     const apiKey = this.generateApiKey();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days expiration
-    await this.databaseService.apiKeyRepository.save(apiKey, user.id, expiresAt);
+    await this.databaseService.apiKeyRepository.save(
+      apiKey,
+      user.id,
+      expiresAt,
+    );
 
     // Remove password from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

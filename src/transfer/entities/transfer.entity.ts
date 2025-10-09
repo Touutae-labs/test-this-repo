@@ -7,7 +7,10 @@ export class Transfer {
   fromUserId: string;
   toUserId: string;
   amount: number;
+  status?: string;
+  idempotencyKey?: string;
   createdAt: Date;
+  updatedAt?: Date;
 
   constructor(partial: Partial<Transfer>) {
     Object.assign(this, partial);

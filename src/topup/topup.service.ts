@@ -15,7 +15,6 @@ import {
 import { randomUUID } from 'crypto';
 // Uncomment when implementing external service integration:
 // import { firstValueFrom } from 'rxjs';
-import { firstValueFrom } from 'rxjs';
 
 /**
  * Top-up Service
@@ -219,7 +218,10 @@ export class TopupService {
    *
    * CRITICAL: Implement proper transaction handling with atomicity
    */
-  async completeTopup(topupId: string, externalTransactionId: string): Promise<void> {
+  async completeTopup(
+    topupId: string,
+    externalTransactionId: string,
+  ): Promise<void> {
     const topup = await this.databaseService.topupRepository.findById(topupId);
 
     if (!topup) {
@@ -230,7 +232,9 @@ export class TopupService {
       throw new BadRequestException('Top-up is not in pending status');
     }
 
-    const user = await this.databaseService.userRepository.findById(topup.userId);
+    const user = await this.databaseService.userRepository.findById(
+      topup.userId,
+    );
 
     if (!user) {
       throw new NotFoundException('User not found');

@@ -10,20 +10,36 @@ import * as sqlite3 from 'sqlite3';
 export class TransactionRepository {
   constructor(
     private readonly dbAll: (sql: string, params?: any[]) => Promise<any[]>,
-    private readonly dbRun: (sql: string, params?: any[]) => Promise<sqlite3.RunResult>,
+    private readonly dbRun: (
+      sql: string,
+      params?: any[],
+    ) => Promise<sqlite3.RunResult>,
   ) {}
 
   async save(transaction: Transaction): Promise<Transaction> {
-    await this.dbRun(`
+    await this.dbRun(
+      `
       INSERT INTO transactions (id, user_id, type, amount, description, created_at)
       VALUES (?, ?, ?, ?, ?, ?)
-    `, [transaction.id, transaction.userId, transaction.type, transaction.amount, transaction.description, transaction.createdAt.toISOString()]);
+    `,
+      [
+        transaction.id,
+        transaction.userId,
+        transaction.type,
+        transaction.amount,
+        transaction.description,
+        transaction.createdAt.toISOString(),
+      ],
+    );
     return transaction;
   }
 
   async findByUserId(userId: string): Promise<Transaction[]> {
-    const rows = await this.dbAll('SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC', [userId]);
-    return rows.map(this.mapRowToTransaction);
+    const rows = await this.dbAll(
+      'SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC',
+      [userId],
+    );
+    return rows.map((row) => this.mapRowToTransaction(row));
   }
 
   private mapRowToTransaction(row: any): Transaction {

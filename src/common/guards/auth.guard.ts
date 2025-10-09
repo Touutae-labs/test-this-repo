@@ -29,7 +29,8 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('API key is required');
     }
 
-    const userId = await this.databaseService.apiKeyRepository.findUserIdByApiKey(apiKey);
+    const userId =
+      await this.databaseService.apiKeyRepository.findUserIdByApiKey(apiKey);
 
     if (!userId) {
       throw new UnauthorizedException('Invalid API key');

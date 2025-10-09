@@ -36,7 +36,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
     // Initialize SQLite connection
     this.db = new sqlite3.Database('./data/ewallet.db');
-    
+
     // Promisify database methods
     this.dbRun = promisify(this.db.run.bind(this.db));
     this.dbGet = promisify(this.db.get.bind(this.db));
@@ -47,9 +47,20 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     // Initialize repositories
     this.userRepository = new UserRepository(this.db, this.dbGet, this.dbRun);
     this.apiKeyRepository = new ApiKeyRepository(this.dbGet, this.dbRun);
-    this.transactionRepository = new TransactionRepository(this.dbAll, this.dbRun);
-    this.topupRepository = new TopupRepository(this.dbGet, this.dbAll, this.dbRun);
-    this.transferRepository = new TransferRepository(this.dbGet, this.dbAll, this.dbRun);
+    this.transactionRepository = new TransactionRepository(
+      this.dbAll,
+      this.dbRun,
+    );
+    this.topupRepository = new TopupRepository(
+      this.dbGet,
+      this.dbAll,
+      this.dbRun,
+    );
+    this.transferRepository = new TransferRepository(
+      this.dbGet,
+      this.dbAll,
+      this.dbRun,
+    );
 
     console.log('✅ SQLite3 database initialized with repositories');
   }
@@ -140,10 +151,20 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     `);
 
     // Create indexes for performance
-    await this.dbRun('CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)');
-    await this.dbRun('CREATE INDEX IF NOT EXISTS idx_api_keys_expires ON api_keys(expires_at)');
-    await this.dbRun('CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id)');
-    await this.dbRun('CREATE INDEX IF NOT EXISTS idx_topups_user ON topups(user_id)');
-    await this.dbRun('CREATE INDEX IF NOT EXISTS idx_transfers_users ON transfers(from_user_id, to_user_id)');
+    await this.dbRun(
+      'CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)',
+    );
+    await this.dbRun(
+      'CREATE INDEX IF NOT EXISTS idx_api_keys_expires ON api_keys(expires_at)',
+    );
+    await this.dbRun(
+      'CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id)',
+    );
+    await this.dbRun(
+      'CREATE INDEX IF NOT EXISTS idx_topups_user ON topups(user_id)',
+    );
+    await this.dbRun(
+      'CREATE INDEX IF NOT EXISTS idx_transfers_users ON transfers(from_user_id, to_user_id)',
+    );
   }
 }

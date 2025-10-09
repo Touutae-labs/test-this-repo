@@ -11,19 +11,29 @@ export class UserRepository {
   constructor(
     private readonly db: sqlite3.Database,
     private readonly dbGet: (sql: string, params?: any[]) => Promise<any>,
-    private readonly dbRun: (sql: string, params?: any[]) => Promise<sqlite3.RunResult>,
+    private readonly dbRun: (
+      sql: string,
+      params?: any[],
+    ) => Promise<sqlite3.RunResult>,
   ) {}
 
   async save(user: User): Promise<User> {
-    await this.dbRun(`
+    await this.dbRun(
+      `
       INSERT OR REPLACE INTO users (id, username, password, balance, failed_login_attempts, locked_until, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      user.id, user.username, user.password, user.balance,
-      user.failedLoginAttempts || 0,
-      user.lockedUntil?.toISOString() || null,
-      user.createdAt.toISOString(), user.updatedAt.toISOString()
-    ]);
+    `,
+      [
+        user.id,
+        user.username,
+        user.password,
+        user.balance,
+        user.failedLoginAttempts || 0,
+        user.lockedUntil ? user.lockedUntil.toISOString() : null,
+        user.createdAt.toISOString(),
+        user.updatedAt.toISOString(),
+      ],
+    );
     return user;
   }
 
@@ -33,7 +43,9 @@ export class UserRepository {
   }
 
   async findByUsername(username: string): Promise<User | undefined> {
-    const row = await this.dbGet('SELECT * FROM users WHERE username = ?', [username]);
+    const row = await this.dbGet('SELECT * FROM users WHERE username = ?', [
+      username,
+    ]);
     return row ? this.mapRowToUser(row) : undefined;
   }
 
