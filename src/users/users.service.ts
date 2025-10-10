@@ -3,10 +3,12 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { DatabaseService } from '../common/database.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from './entities/user.entity';
+import { ApiKey } from '../common/entities/api-key.entity';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 
@@ -23,7 +25,12 @@ import { randomUUID } from 'crypto';
  */
 @Injectable()
 export class UsersService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(ApiKey)
+    private readonly apiKeyRepository: Repository<ApiKey>,
+  ) {}
 
   /**
    * Register a new user
@@ -33,10 +40,9 @@ export class UsersService {
   async register(
     createUserDto: CreateUserDto,
   ): Promise<{ user: User; apiKey: string }> {
-    const existingUser =
-      await this.databaseService.userRepository.findByUsername(
-        createUserDto.username,
-      );
+    const existingUser = await this.userRepository.findOne({
+      where: { username: createUserDto.username },
+    });
 
     if (existingUser) {
       throw new ConflictException('Username already exists');
@@ -46,33 +52,32 @@ export class UsersService {
     // CRITICAL: Review salt rounds and hashing algorithm for production
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
-    const user = new User({
-      id: randomUUID(),
+    const user = this.userRepository.create({
       username: createUserDto.username,
       password: hashedPassword,
       balance: 0, // Initial balance
-      createdAt: new Date(),
-      updatedAt: new Date(),
     });
 
-    await this.databaseService.userRepository.save(user);
+    await this.userRepository.save(user);
 
     // Generate API key for authentication
     // CRITICAL: Implement secure API key generation
-    const apiKey = this.generateApiKey();
+    const apiKeyValue = this.generateApiKey();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days expiration
-    await this.databaseService.apiKeyRepository.save(
-      apiKey,
-      user.id,
+
+    const apiKey = this.apiKeyRepository.create({
+      key: apiKeyValue,
+      userId: user.id,
       expiresAt,
-    );
+    });
+    await this.apiKeyRepository.save(apiKey);
 
     // Remove password from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
 
-    return { user: userWithoutPassword as User, apiKey };
+    return { user: userWithoutPassword as User, apiKey: apiKeyValue };
   }
 
   /**
@@ -81,9 +86,9 @@ export class UsersService {
    * CRITICAL: Implement proper authentication logic
    */
   async login(loginDto: LoginDto): Promise<{ user: User; apiKey: string }> {
-    const user = await this.databaseService.userRepository.findByUsername(
-      loginDto.username,
-    );
+    const user = await this.userRepository.findOne({
+      where: { username: loginDto.username },
+    });
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -101,27 +106,29 @@ export class UsersService {
 
     // Generate new API key
     // CRITICAL: Consider using JWT tokens instead
-    const apiKey = this.generateApiKey();
+    const apiKeyValue = this.generateApiKey();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days expiration
-    await this.databaseService.apiKeyRepository.save(
-      apiKey,
-      user.id,
+
+    const apiKey = this.apiKeyRepository.create({
+      key: apiKeyValue,
+      userId: user.id,
       expiresAt,
-    );
+    });
+    await this.apiKeyRepository.save(apiKey);
 
     // Remove password from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
 
-    return { user: userWithoutPassword as User, apiKey };
+    return { user: userWithoutPassword as User, apiKey: apiKeyValue };
   }
 
   /**
    * Get user by ID
    */
-  async findById(userId: string): Promise<User | undefined> {
-    return this.databaseService.userRepository.findById(userId);
+  async findById(userId: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { id: userId } });
   }
 
   /**

@@ -3,14 +3,15 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { DatabaseService } from '../common/database.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { Transfer } from './entities/transfer.entity';
 import {
   Transaction,
   TransactionType,
 } from '../balance/entities/transaction.entity';
-import { randomUUID } from 'crypto';
+import { User } from '../users/entities/user.entity';
 
 /**
  * Transfer Service
@@ -29,9 +30,13 @@ import { randomUUID } from 'crypto';
 @Injectable()
 export class TransferService {
   constructor(
-    private readonly databaseService: DatabaseService,
-    // Uncomment when using idempotency:
-    // private readonly idempotencyService: IdempotencyService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(Transfer)
+    private readonly transferRepository: Repository<Transfer>,
+    @InjectRepository(Transaction)
+    private readonly transactionRepository: Repository<Transaction>,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
@@ -81,86 +86,76 @@ export class TransferService {
     fromUserId: string,
     createTransferDto: CreateTransferDto,
   ): Promise<Transfer> {
-    // TODO: Add idempotency check here using IdempotencyService
-    // TODO: See example implementation in comments above
+    // Use database transaction for atomicity
+    return await this.dataSource.transaction(async (manager) => {
+      const fromUser = await manager.findOne(User, {
+        where: { id: fromUserId },
+        lock: { mode: 'pessimistic_write' },
+      });
 
-    const fromUser =
-      await this.databaseService.userRepository.findById(fromUserId);
+      if (!fromUser) {
+        throw new NotFoundException('Sender not found');
+      }
 
-    if (!fromUser) {
-      throw new NotFoundException('Sender not found');
-    }
+      const toUser = await manager.findOne(User, {
+        where: { username: createTransferDto.recipientUsername },
+        lock: { mode: 'pessimistic_write' },
+      });
 
-    const toUser = await this.databaseService.userRepository.findByUsername(
-      createTransferDto.recipientUsername,
-    );
+      if (!toUser) {
+        throw new NotFoundException('Recipient not found');
+      }
 
-    if (!toUser) {
-      throw new NotFoundException('Recipient not found');
-    }
+      if (fromUser.id === toUser.id) {
+        throw new BadRequestException('Cannot transfer to yourself');
+      }
 
-    if (fromUser.id === toUser.id) {
-      throw new BadRequestException('Cannot transfer to yourself');
-    }
+      // CRITICAL: Implement comprehensive validation
+      this.validateTransfer(fromUser.balance, createTransferDto.amount);
 
-    // CRITICAL: Implement comprehensive validation
-    this.validateTransfer(fromUser.balance, createTransferDto.amount);
+      // Deduct from sender
+      const senderBalanceBefore = fromUser.balance;
+      fromUser.balance -= createTransferDto.amount;
+      await manager.save(fromUser);
 
-    // CRITICAL: In a real database, this should be an atomic transaction
-    // See DATABASE_SETUP.md for TypeORM transaction example
-    // If any step fails, all changes should be rolled back
+      // Add to recipient
+      const recipientBalanceBefore = toUser.balance;
+      toUser.balance += createTransferDto.amount;
+      await manager.save(toUser);
 
-    // Deduct from sender
-    const senderBalanceBefore = fromUser.balance;
-    fromUser.balance -= createTransferDto.amount;
-    fromUser.updatedAt = new Date();
-    await this.databaseService.userRepository.save(fromUser);
+      // Create transfer record
+      const transfer = manager.create(Transfer, {
+        fromUserId: fromUser.id,
+        toUserId: toUser.id,
+        amount: createTransferDto.amount,
+      });
+      await manager.save(transfer);
 
-    // Add to recipient
-    const recipientBalanceBefore = toUser.balance;
-    toUser.balance += createTransferDto.amount;
-    toUser.updatedAt = new Date();
-    await this.databaseService.userRepository.save(toUser);
+      // Record transactions for both users
+      const senderTransaction = manager.create(Transaction, {
+        userId: fromUser.id,
+        amount: -createTransferDto.amount,
+        type: TransactionType.TRANSFER_OUT,
+        balanceBefore: senderBalanceBefore,
+        balanceAfter: fromUser.balance,
+        description: `Transfer to ${toUser.username}`,
+        metadata: { transferId: transfer.id, recipientId: toUser.id },
+      });
+      await manager.save(senderTransaction);
 
-    // Create transfer record
-    const transfer = new Transfer({
-      id: randomUUID(),
-      fromUserId: fromUser.id,
-      toUserId: toUser.id,
-      amount: createTransferDto.amount,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      const recipientTransaction = manager.create(Transaction, {
+        userId: toUser.id,
+        amount: createTransferDto.amount,
+        type: TransactionType.TRANSFER_IN,
+        balanceBefore: recipientBalanceBefore,
+        balanceAfter: toUser.balance,
+        description: `Transfer from ${fromUser.username}`,
+        metadata: { transferId: transfer.id, senderId: fromUser.id },
+      });
+      await manager.save(recipientTransaction);
+
+      return transfer;
     });
-    await this.databaseService.transferRepository.save(transfer);
-
-    // Record transactions for both users
-    const senderTransaction = new Transaction({
-      id: randomUUID(),
-      userId: fromUser.id,
-      amount: -createTransferDto.amount,
-      type: TransactionType.TRANSFER_OUT,
-      balanceBefore: senderBalanceBefore,
-      balanceAfter: fromUser.balance,
-      description: `Transfer to ${toUser.username}`,
-      metadata: { transferId: transfer.id, recipientId: toUser.id },
-      createdAt: new Date(),
-    });
-    await this.databaseService.transactionRepository.save(senderTransaction);
-
-    const recipientTransaction = new Transaction({
-      id: randomUUID(),
-      userId: toUser.id,
-      amount: createTransferDto.amount,
-      type: TransactionType.TRANSFER_IN,
-      balanceBefore: recipientBalanceBefore,
-      balanceAfter: toUser.balance,
-      description: `Transfer from ${fromUser.username}`,
-      metadata: { transferId: transfer.id, senderId: fromUser.id },
-      createdAt: new Date(),
-    });
-    await this.databaseService.transactionRepository.save(recipientTransaction);
-
-    return transfer;
   }
 
   /**
@@ -205,12 +200,15 @@ export class TransferService {
    * Get user's transfer history
    */
   async getTransferHistory(userId: string): Promise<Transfer[]> {
-    const user = await this.databaseService.userRepository.findById(userId);
+    const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return this.databaseService.transferRepository.findByUserId(userId);
+    return this.transferRepository.find({
+      where: [{ fromUserId: userId }, { toUserId: userId }],
+      order: { createdAt: 'DESC' },
+    });
   }
 }
