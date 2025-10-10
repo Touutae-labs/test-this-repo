@@ -5,13 +5,18 @@ import { BalanceModule } from './balance/balance.module';
 import { TopupModule } from './topup/topup.module';
 import { TransferModule } from './transfer/transfer.module';
 import { UsersModule } from './users/users.module';
+import { User } from './users/entities/user.entity';
+import { Topup } from './topup/entities/topup.entity';
+import { Transfer } from './transfer/entities/transfer.entity';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: 'database.sqlite',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      database: 'data/ewallet.db',
+      entities: [User, Topup, Transfer],
       synchronize: true,
     }),
     ConfigModule.forRoot({
@@ -22,5 +27,7 @@ import { UsersModule } from './users/users.module';
     TopupModule,
     TransferModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
