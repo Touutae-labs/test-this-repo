@@ -1,17 +1,29 @@
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+
 export enum TopupStatus {
   PENDING = 'PENDING',
   SUCCESS = 'SUCCESS',
   FAILED = 'FAILED',
 }
 
+@Entity("topups")
 export class Topup {
+  @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column()
   userId: string;
+  @Column('decimal', { precision: 15, scale: 2 })
   amount: number;
+  @Column()
   status: TopupStatus;
+  @Column({ nullable: true })
   externalTransactionId?: string;
+  @Column({ nullable: true })
   idempotencyKey?: string;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
+  @Column({ type: 'timestamp', default: 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
   constructor(partial: Partial<Topup>) {
