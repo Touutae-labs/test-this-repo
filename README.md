@@ -1,7 +1,5 @@
 # E-Wallet Backend Service
 
-> Backend Engineer Exam Implementation for Mr. Roney Jae's fintech ecosystem
-
 ## Quick Setup
 
 1. `docker-compose up -d` - Start external payment service
