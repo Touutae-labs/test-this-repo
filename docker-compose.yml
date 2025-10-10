@@ -1,15 +1,35 @@
 version: "3.8"
 
 services:
+  # External payment service provided for the exam
   backend-interview:
     image: apemon/backend-interview:latest
     container_name: backend-interview-app
     ports:
       - "3000:3000"
     environment:
-      - WEBHOOK_URL=http://your-webhook-url
+      # CRITICAL: Update these values to match your e-wallet backend
+      - WEBHOOK_URL=http://host.docker.internal:8080/topup/webhook
       - WEBHOOK_SECRET=your-webhook-secret
       - API_KEY=your-api-key
       - SUCCESS_TOPUP_STATUS_RATE=0.9
       - IGNORE_WEBHOOK_RATE=0.1
     restart: unless-stopped
+    # Allow access to host network for webhook callbacks
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # E-Wallet Backend (uncomment when ready to containerize)
+  # e-wallet-backend:
+  #   build: .
+  #   container_name: e-wallet-backend
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - PORT=8080
+  #     - EXTERNAL_SERVICE_URL=http://backend-interview:3000
+  #     - EXTERNAL_API_KEY=your-api-key
+  #     - WEBHOOK_SECRET=your-webhook-secret
+  #   depends_on:
+  #     - backend-interview
+  #   restart: unless-stopped
