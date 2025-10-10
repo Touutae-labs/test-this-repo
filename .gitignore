@@ -39,6 +39,10 @@ lerna-debug.log*
 .env.local
 .env.*.local
 
+# Database
+*.sqlite
+*.sqlite-journal
+
 # Temp
 /tmp
 *.tmp
