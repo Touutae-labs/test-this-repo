@@ -1,15 +1,15 @@
 import {
-  Controller,
-  Post,
-  Get,
   Body,
-  UseGuards,
+  Controller,
+  Get,
   Headers,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
-import { TopupService } from './topup.service';
-import { CreateTopupDto } from './dto/create-topup.dto';
-import { AuthGuard } from '../common/guards/auth.guard';
 import { CurrentUser } from '../common/decorators/user.decorator';
+import { AuthGuard } from '../common/guards/auth.guard';
+import { CreateTopupDto } from './dto/create-topup.dto';
+import { TopupService } from './topup.service';
 
 /**
  * Top-up Controller
@@ -43,7 +43,7 @@ export class TopupController {
   @Post('webhook')
   handleWebhook(
     @Body() payload: any,
-    @Headers('x-webhook-signature') signature?: string,
+    @Headers('X-Signature') signature?: string,
   ) {
     this.topupService.handleWebhook(payload, signature);
     return { success: true };

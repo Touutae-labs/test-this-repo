@@ -1,35 +1,26 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { CreateTopupDto } from './dto/create-topup.dto';
-import { Topup, TopupStatus, ExternalWebhookDto } from './entities/topup.entity';
+import * as crypto from 'crypto';
+import { firstValueFrom } from 'rxjs';
+import { DataSource, Repository } from 'typeorm';
 import {
   Transaction,
   TransactionType,
 } from '../balance/entities/transaction.entity';
 import { User } from '../users/entities/user.entity';
-import { firstValueFrom } from 'rxjs';
-import * as crypto from 'crypto';
+import { CreateTopupDto } from './dto/create-topup.dto';
+import { ExternalTopupRequestDto, Topup, TopupStatus } from './entities/topup.entity';
 
 /**
  * Top-up Service
  * Handles top-up functionality with external service integration
- *
- * CRITICAL PARTS TO IMPLEMENT:
- * 1. processExternalTopup() - Integrate with the external payment service
- * 2. handleWebhook() - Process webhook notifications from external service
- * 3. verifyWebhookSignature() - Implement webhook signature verification
- *
- * ✅ IMPLEMENTED:
- * 4. Idempotency handling using Bloom filters and IdempotencyService
- * 5. Proper error handling structure
  */
 @Injectable()
 export class TopupService {
@@ -41,8 +32,6 @@ export class TopupService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Topup)
     private readonly topupRepository: Repository<Topup>,
-    @InjectRepository(Transaction)
-    private readonly transactionRepository: Repository<Transaction>,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly dataSource: DataSource,
@@ -89,14 +78,6 @@ export class TopupService {
 
   /**
    * Process top-up with external payment service
-   *
-   * CRITICAL: IMPLEMENT THIS METHOD
-   *
-   * Steps to implement:
-   * 1. Get external service URL and API key from environment
-   * 2. Make HTTP request to external service API
-   * 3. Handle response and update topup status
-   * 4. See Swagger docs at http://localhost:3000/doc for API details
    */
   private async processExternalTopup(topup: Topup): Promise<void> {
     const externalServiceUrl = this.configService.get<string>(
@@ -110,24 +91,28 @@ export class TopupService {
     }
 
     try {
+      const payload: ExternalTopupRequestDto = {
+        referenceId: topup.id,
+        walletId: topup.userId,
+        amount: topup.amount,
+        currency: 'THB',
+      };
+
       // Make API call to external service
       const response = await firstValueFrom(
         this.httpService.post(
-          `${externalServiceUrl}/topup`,
-          {
-            referenceId: topup.id,
-            walletId: topup.userId,
-            amount: topup.amount,
-            currency: 'THB',
-          },
+          `${externalServiceUrl}/payments/topup`,
+          payload,
           {
             headers: {
-              'x-api-key': apiKey,
+              'Authorization': `Bearer ${apiKey}`,
               'Content-Type': 'application/json',
             },
           },
         ),
       );
+
+      console.log('response', response.data);
 
       // Update topup with external transaction ID
       if (response.data.requestId) {
@@ -159,7 +144,7 @@ export class TopupService {
     }
 
     // 2. Check idempotency - prevent duplicate processing
-    const webhookData = payload as ExternalWebhookDto;
+    const webhookData = payload;
     const idempotencyKey = `webhook_${webhookData.requestId}_${webhookData.referenceId}`;
 
     if (this.processedWebhooks.has(idempotencyKey)) {
@@ -168,24 +153,24 @@ export class TopupService {
     }
 
     // 3. Extract transaction details from webhook payload
-    const topupId = webhookData.referenceId;
-    const externalTransactionId = webhookData.requestId;
+    const topupId = webhookData.referenceId;  // This is our topup.id
+    const externalTransactionId = webhookData.requestId;  // This is external service's ID
 
     this.logger.log(
-      `Processing webhook for topup ${topupId}, status: ${webhookData.status}`,
+      `Processing webhook for topup ${topupId}, status: ${webhookData.status}, event: ${webhookData.event}`,
     );
 
     // 4. Update topup status based on webhook data
-    if (webhookData.status === 'completed') {
+    if (webhookData.status.toLowerCase() === TopupStatus.COMPLETED.toLowerCase()) {
       await this.completeTopup(topupId, externalTransactionId);
-    } else if (webhookData.status === 'failed') {
+    } else if (webhookData.status.toLowerCase() === TopupStatus.FAILED.toLowerCase()) {
       const topup = await this.topupRepository.findOne({
         where: { id: topupId },
       });
       if (topup) {
         topup.status = TopupStatus.FAILED;
         await this.topupRepository.save(topup);
-        this.logger.log(`Topup ${topupId} marked as failed`);
+        this.logger.log(`Topup ${topupId} marked as failed: ${webhookData.statusMessage}`);
       }
     }
 
@@ -274,7 +259,7 @@ export class TopupService {
       await manager.save(user);
 
       // Update topup status
-      topup.status = TopupStatus.SUCCESS;
+      topup.status = TopupStatus.COMPLETED;
       topup.externalTransactionId = externalTransactionId;
       await manager.save(topup);
 

@@ -1,0 +1,1215 @@
+{
+	"info": {
+		"_postman_id": "e-wallet-api-collection",
+		"name": "E-Wallet API Collection",
+		"description": "Complete API collection for testing E-Wallet Backend system including user management, balance, topup, transfer, and webhook functionality.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. User Management",
+			"item": [
+				{
+					"name": "Register User - Alice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('alice_api_key', jsonData.apiKey);",
+									"    pm.environment.set('alice_user_id', jsonData.user.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"alice\",\n  \"password\": \"securepass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register User - Bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('bob_api_key', jsonData.apiKey);",
+									"    pm.environment.set('bob_user_id', jsonData.user.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"bob\",\n  \"password\": \"securepass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login User - Alice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('alice_api_key', jsonData.apiKey);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"alice\",\n  \"password\": \"securepass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile - Alice",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{alice_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile - Bob",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{bob_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Balance Management",
+			"item": [
+				{
+					"name": "Get Balance - Alice",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{alice_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/balance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"balance"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Balance - Bob",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{bob_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/balance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"balance"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transaction History - Alice",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{alice_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/balance/history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"balance",
+								"history"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transaction History - Bob",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{bob_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/balance/history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"balance",
+								"history"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Top-up Management",
+			"item": [
+				{
+					"name": "Create Top-up - Alice (100 THB)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('alice_topup_id', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{alice_api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 100\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/topup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"topup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Top-up - Bob (50 THB)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('bob_topup_id', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{bob_api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 50\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/topup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"topup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Top-up History - Alice",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{alice_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/topup/history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"topup",
+								"history"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Top-up History - Bob",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{bob_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/topup/history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"topup",
+								"history"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Webhook Simulation",
+			"item": [
+				{
+					"name": "Simulate Webhook - Alice Top-up SUCCESS",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Signature",
+								"value": "test-signature-alice-success"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"requestId\": \"ext-txn-alice-001\",\n  \"referenceId\": \"{{alice_topup_id}}\",\n  \"walletId\": \"{{alice_user_id}}\",\n  \"amount\": 100,\n  \"currency\": \"THB\",\n  \"status\": \"COMPLETED\",\n  \"statusMessage\": \"Transaction completed successfully\",\n  \"requestedAt\": \"2024-01-15T10:30:45.123Z\",\n  \"createdAt\": \"2024-01-15T10:30:45.123Z\",\n  \"updatedAt\": \"2024-01-15T10:35:22.456Z\",\n  \"event\": \"topup.status.changed\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/topup/webhook",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"topup",
+								"webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Simulate Webhook - Bob Top-up FAILED",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Signature",
+								"value": "test-signature-bob-failed"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"requestId\": \"ext-txn-bob-001\",\n  \"referenceId\": \"{{bob_topup_id}}\",\n  \"walletId\": \"{{bob_user_id}}\",\n  \"amount\": 50,\n  \"currency\": \"THB\",\n  \"status\": \"FAILED\",\n  \"statusMessage\": \"Transaction failed - payment gateway error\",\n  \"requestedAt\": \"2024-01-15T10:30:45.123Z\",\n  \"createdAt\": \"2024-01-15T10:30:45.123Z\",\n  \"updatedAt\": \"2024-01-15T10:35:22.456Z\",\n  \"event\": \"topup.status.changed\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/topup/webhook",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"topup",
+								"webhook"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Transfer Management",
+			"item": [
+				{
+					"name": "Transfer - Alice to Bob (25 THB) [Should Work After Topup]",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{alice_api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"recipientUsername\": \"bob\",\n  \"amount\": 25\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/transfer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transfer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transfer - Alice to Bob (Insufficient Balance) [Should Fail]",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{alice_api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"recipientUsername\": \"bob\",\n  \"amount\": 1000\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/transfer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transfer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transfer - To Self [Should Fail]",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{alice_api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"recipientUsername\": \"alice\",\n  \"amount\": 10\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/transfer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transfer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transfer - To Non-existent User [Should Fail]",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{alice_api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"recipientUsername\": \"nonexistent\",\n  \"amount\": 10\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/transfer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transfer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transfer History - Alice",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{alice_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/transfer/history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transfer",
+								"history"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transfer History - Bob",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{bob_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/transfer/history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transfer",
+								"history"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Error Cases & Validation",
+			"item": [
+				{
+					"name": "No Authentication [Should Fail]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/balance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"balance"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid API Key [Should Fail]",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "invalid-api-key-123"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/balance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"balance"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register Duplicate Username [Should Fail]",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"alice\",\n  \"password\": \"anotherpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Wrong Password [Should Fail]",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"alice\",\n  \"password\": \"wrongpassword\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid Top-up Amount [Should Fail]",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{alice_api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": -100\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/topup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"topup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Zero Transfer Amount [Should Fail]",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{alice_api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"recipientUsername\": \"bob\",\n  \"amount\": 0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/topup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"topup"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "7. Complete User Journey",
+			"item": [
+				{
+					"name": "Step 1: Register Charlie",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('charlie_api_key', jsonData.apiKey);",
+									"    pm.environment.set('charlie_user_id', jsonData.user.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"charlie\",\n  \"password\": \"charlie123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2: Check Charlie's Initial Balance (Should be 0)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{charlie_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/balance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"balance"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3: Create Top-up for Charlie (200 THB)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('charlie_topup_id', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{charlie_api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 200\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/topup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"topup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 4: Check Top-up Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{charlie_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/topup/history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"topup",
+								"history"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 5: Simulate Successful Webhook for Charlie",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Signature",
+								"value": "test-signature-charlie"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"requestId\": \"ext-txn-charlie-001\",\n  \"referenceId\": \"{{charlie_topup_id}}\",\n  \"walletId\": \"{{charlie_user_id}}\",\n  \"amount\": 200,\n  \"currency\": \"THB\",\n  \"status\": \"COMPLETED\",\n  \"statusMessage\": \"Transaction completed successfully\",\n  \"requestedAt\": \"2024-01-15T10:30:45.123Z\",\n  \"createdAt\": \"2024-01-15T10:30:45.123Z\",\n  \"updatedAt\": \"2024-01-15T10:35:22.456Z\",\n  \"event\": \"topup.status.changed\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/topup/webhook",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"topup",
+								"webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 6: Check Charlie's Balance After Top-up (Should be 200)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{charlie_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/balance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"balance"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 7: Transfer from Charlie to Bob (75 THB)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{charlie_api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"recipientUsername\": \"bob\",\n  \"amount\": 75\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/transfer",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"transfer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 8: Check Charlie's Balance After Transfer (Should be 125)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{charlie_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/balance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"balance"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 9: Check Bob's Balance After Receiving Transfer",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{bob_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/balance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"balance"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Step 10: Check Transaction Histories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{charlie_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/balance/history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"balance",
+								"history"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "8. External Service Testing",
+			"item": [
+				{
+					"name": "External Service - Get Swagger Docs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{external_service_url}}/doc",
+							"host": [
+								"{{external_service_url}}"
+							],
+							"path": [
+								"doc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "External Service - Direct Top-up Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{external_api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"referenceId\": \"test-ref-123\",\n  \"walletId\": \"test-wallet-456\",\n  \"amount\": 100,\n  \"currency\": \"THB\"\n}"
+						},
+						"url": {
+							"raw": "{{external_service_url}}/topup",
+							"host": [
+								"{{external_service_url}}"
+							],
+							"path": [
+								"topup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "External Service - Get Top-up Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{external_api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{external_service_url}}/topup/{topup-id}",
+							"host": [
+								"{{external_service_url}}"
+							],
+							"path": [
+								"topup",
+								"{topup-id}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "external_service_url",
+			"value": "http://localhost:3000"
+		},
+		{
+			"key": "external_api_key",
+			"value": "your-api-key"
+		},
+		{
+			"key": "webhook_secret",
+			"value": "your-webhook-secret"
+		}
+	]
+}

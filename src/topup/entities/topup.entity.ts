@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 export enum TopupStatus {
   PENDING = 'PENDING',
-  SUCCESS = 'SUCCESS',
+  COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
 }
 
@@ -65,11 +65,15 @@ export class ExternalTopupResponseDto {
 export class ExternalWebhookDto {
   requestId: string;
   referenceId: string;
-  status: 'completed' | 'failed' | 'pending';
-  statusMessage?: string;
+  walletId: string;
   amount: number;
   currency: string;
-  processedAt: Date;
+  status: TopupStatus;
+  statusMessage?: string;
+  requestedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  event: string;
 
   constructor(partial: Partial<ExternalWebhookDto>) {
     Object.assign(this, partial);
