@@ -1,14 +1,15 @@
 {
 	"info": {
-		"_postman_id": "e-wallet-api-collection-v2",
+		"_postman_id": "f4c9084c-3373-4677-b99b-6c2da33f7b02",
 		"name": "E-Wallet POC API Collection 🚀",
 		"description": "Complete API collection for Mr. Roney Jae's fintech e-wallet POC system. Includes user management, balance operations, top-up with external service integration, money transfers, and webhook handling. Ready for production testing and demo to investors! 💰",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19733602",
+		"_collection_link": "https://planetary-flare-742022.postman.co/workspace/My-Workspace~b1cabafd-588b-4f67-81b7-bd83c4cb21f4/collection/19733602-f4c9084c-3373-4677-b99b-6c2da33f7b02?action=share&source=collection_link&creator=19733602"
 	},
 	"item": [
 		{
 			"name": "📋 Setup Instructions",
-			"description": "Important setup steps before running tests",
 			"item": [
 				{
 					"name": "README - Setup Instructions",
@@ -27,13 +28,14 @@
 							]
 						},
 						"description": "🚨 SETUP REQUIRED BEFORE TESTING:\n\n1. **Start External Service**:\n   ```bash\n   docker-compose up -d backend-interview\n   ```\n\n2. **Start E-Wallet Backend**:\n   ```bash\n   npm run start:dev\n   ```\n\n3. **Verify Services**:\n   - E-Wallet API: http://localhost:8080\n   - External Service: http://localhost:3000\n   - External Service Docs: http://localhost:3000/doc\n\n4. **Environment Variables**:\n   Update .env file:\n   ```\n   EXTERNAL_SERVICE_URL=http://localhost:3000\n   EXTERNAL_API_KEY=your-api-key\n   WEBHOOK_SECRET=your-webhook-secret\n   ```\n\n5. **Docker Configuration**:\n   Ensure docker-compose.yml has:\n   ```\n   WEBHOOK_URL=http://host.docker.internal:8080/topup/webhook\n   ```\n\n🎯 **Quick Start**: Run the \"🎯 Quick Demo Flow\" folder for an investor-ready demonstration!"
-					}
+					},
+					"response": []
 				}
-			]
+			],
+			"description": "Important setup steps before running tests"
 		},
 		{
 			"name": "🎯 Quick Demo Flow",
-			"description": "Run this folder in sequence for a complete investor demonstration of the e-wallet system",
 			"item": [
 				{
 					"name": "1. Register Demo User",
@@ -84,7 +86,8 @@
 							]
 						},
 						"description": "Register a demo user for investor presentation"
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "2. Check Initial Balance (Should be 0)",
@@ -123,7 +126,8 @@
 							]
 						},
 						"description": "Verify initial balance is zero"
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "3. Create Top-up (100 THB)",
@@ -173,7 +177,8 @@
 							]
 						},
 						"description": "Initiate top-up with external payment service"
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "4. Wait for Webhook ⏰ (Manual Step)",
@@ -191,7 +196,8 @@
 							]
 						},
 						"description": "🚨 WAIT 5-10 SECONDS before running this! The external service processes payments asynchronously and sends webhooks to update the status."
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "5. Check Updated Balance (Should be 100)",
@@ -233,9 +239,11 @@
 							]
 						},
 						"description": "Verify balance increased after successful top-up"
-					}
+					},
+					"response": []
 				}
-			]
+			],
+			"description": "Run this folder in sequence for a complete investor demonstration of the e-wallet system"
 		},
 		{
 			"name": "👤 User Management",
@@ -519,7 +527,6 @@
 		},
 		{
 			"name": "💳 Top-up Management (External Service)",
-			"description": "Integration with external payment service - requires Docker service running on port 3000",
 			"item": [
 				{
 					"name": "Create Top-up - Alice (100 THB)",
@@ -660,11 +667,11 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "Integration with external payment service - requires Docker service running on port 3000"
 		},
 		{
 			"name": "🔗 Webhook Testing (Manual Simulation)",
-			"description": "Manual webhook simulation for testing - normally sent automatically by external service",
 			"item": [
 				{
 					"name": "Simulate Webhook - Alice Top-up SUCCESS",
@@ -729,11 +736,11 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "Manual webhook simulation for testing - normally sent automatically by external service"
 		},
 		{
 			"name": "🔄 Money Transfer",
-			"description": "P2P money transfers between wallet users with validation",
 			"item": [
 				{
 					"name": "Transfer - Alice to Bob (25 THB) [Should Work After Topup]",
@@ -901,11 +908,11 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "P2P money transfers between wallet users with validation"
 		},
 		{
 			"name": "❌ Error Handling & Security",
-			"description": "Test error cases, validation, and security features",
 			"item": [
 				{
 					"name": "No Authentication [Should Fail]",
@@ -1060,11 +1067,11 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "Test error cases, validation, and security features"
 		},
 		{
 			"name": "🎬 Complete E2E Journey",
-			"description": "Full end-to-end user journey from registration to transfer - perfect for investor demos!",
 			"item": [
 				{
 					"name": "Step 1: Register Charlie",
@@ -1347,11 +1354,11 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "Full end-to-end user journey from registration to transfer - perfect for investor demos!"
 		},
 		{
 			"name": "🐳 External Service Testing",
-			"description": "Direct testing of the external payment service (Docker container on port 3000)",
 			"item": [
 				{
 					"name": "External Service - Health Check",
@@ -1382,7 +1389,8 @@
 							]
 						},
 						"description": "Check if external payment service is running and accessible"
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "External Service - Direct Top-up Request",
@@ -1437,7 +1445,8 @@
 					},
 					"response": []
 				}
-			]
+			],
+			"description": "Direct testing of the external payment service (Docker container on port 3000)"
 		}
 	],
 	"event": [
