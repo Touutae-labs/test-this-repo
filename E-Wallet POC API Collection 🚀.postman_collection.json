@@ -1205,37 +1205,6 @@
 					"response": []
 				},
 				{
-					"name": "Step 5: Simulate Successful Webhook for Charlie",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "X-Signature",
-								"value": "test-signature-charlie"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"requestId\": \"ext-txn-charlie-001\",\n  \"referenceId\": \"{{charlie_topup_id}}\",\n  \"walletId\": \"{{charlie_user_id}}\",\n  \"amount\": 200,\n  \"currency\": \"THB\",\n  \"status\": \"COMPLETED\",\n  \"statusMessage\": \"Transaction completed successfully\",\n  \"requestedAt\": \"2024-01-15T10:30:45.123Z\",\n  \"createdAt\": \"2024-01-15T10:30:45.123Z\",\n  \"updatedAt\": \"2024-01-15T10:35:22.456Z\",\n  \"event\": \"topup.status.changed\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/topup/webhook",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"topup",
-								"webhook"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Step 6: Check Charlie's Balance After Top-up (Should be 200)",
 					"request": {
 						"method": "GET",
