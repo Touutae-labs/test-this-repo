@@ -27,7 +27,7 @@ export class User {
   @Column({ nullable: true, default: 0 })
   failedLoginAttempts?: number;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   lockedUntil?: Date;
 
   @CreateDateColumn()

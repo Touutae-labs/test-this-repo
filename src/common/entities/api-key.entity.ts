@@ -8,7 +8,7 @@ export class ApiKey {
   @Column()
   userId: string;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'datetime' })
   expiresAt: Date;
 
   @CreateDateColumn()
