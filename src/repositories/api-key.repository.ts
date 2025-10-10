@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as sqlite3 from 'sqlite3';
+import { DatabaseService } from '../common/database.service';
 
 /**
  * API Key Repository
@@ -7,16 +7,10 @@ import * as sqlite3 from 'sqlite3';
  */
 @Injectable()
 export class ApiKeyRepository {
-  constructor(
-    private readonly dbGet: (sql: string, params?: any[]) => Promise<any>,
-    private readonly dbRun: (
-      sql: string,
-      params?: any[],
-    ) => Promise<sqlite3.RunResult>,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async save(apiKey: string, userId: string, expiresAt: Date): Promise<void> {
-    await this.dbRun(
+    await this.databaseService.run(
       `
       INSERT OR REPLACE INTO api_keys (api_key, user_id, expires_at, created_at, last_used_at)
       VALUES (?, ?, ?, ?, ?)
@@ -32,7 +26,7 @@ export class ApiKeyRepository {
   }
 
   async findUserIdByApiKey(apiKey: string): Promise<string | undefined> {
-    const row = await this.dbGet(
+    const row = await this.databaseService.get(
       `
       SELECT user_id FROM api_keys 
       WHERE api_key = ? AND expires_at > datetime('now')
@@ -42,7 +36,7 @@ export class ApiKeyRepository {
 
     if (row) {
       // Update last used timestamp
-      await this.dbRun(
+      await this.databaseService.run(
         'UPDATE api_keys SET last_used_at = ? WHERE api_key = ?',
         [new Date().toISOString(), apiKey],
       );
@@ -52,11 +46,13 @@ export class ApiKeyRepository {
   }
 
   async delete(apiKey: string): Promise<void> {
-    await this.dbRun('DELETE FROM api_keys WHERE api_key = ?', [apiKey]);
+    await this.databaseService.run('DELETE FROM api_keys WHERE api_key = ?', [
+      apiKey,
+    ]);
   }
 
   async cleanupExpired(): Promise<number> {
-    const result = await this.dbRun(
+    const result = await this.databaseService.run(
       "DELETE FROM api_keys WHERE expires_at <= datetime('now')",
     );
     return result.changes || 0;

@@ -3,7 +3,8 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { DatabaseService } from '../common/database.service';
+import { UserRepository } from '../repositories/user.repository';
+import { ApiKeyRepository } from '../repositories/api-key.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from './entities/user.entity';
@@ -23,7 +24,10 @@ import { randomUUID } from 'crypto';
  */
 @Injectable()
 export class UsersService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly apiKeyRepository: ApiKeyRepository,
+  ) {}
 
   /**
    * Register a new user
@@ -33,10 +37,9 @@ export class UsersService {
   async register(
     createUserDto: CreateUserDto,
   ): Promise<{ user: User; apiKey: string }> {
-    const existingUser =
-      await this.databaseService.userRepository.findByUsername(
-        createUserDto.username,
-      );
+    const existingUser = await this.userRepository.findByUsername(
+      createUserDto.username,
+    );
 
     if (existingUser) {
       throw new ConflictException('Username already exists');
@@ -55,18 +58,14 @@ export class UsersService {
       updatedAt: new Date(),
     });
 
-    await this.databaseService.userRepository.save(user);
+    await this.userRepository.save(user);
 
     // Generate API key for authentication
     // CRITICAL: Implement secure API key generation
     const apiKey = this.generateApiKey();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days expiration
-    await this.databaseService.apiKeyRepository.save(
-      apiKey,
-      user.id,
-      expiresAt,
-    );
+    await this.apiKeyRepository.save(apiKey, user.id, expiresAt);
 
     // Remove password from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -81,9 +80,7 @@ export class UsersService {
    * CRITICAL: Implement proper authentication logic
    */
   async login(loginDto: LoginDto): Promise<{ user: User; apiKey: string }> {
-    const user = await this.databaseService.userRepository.findByUsername(
-      loginDto.username,
-    );
+    const user = await this.userRepository.findByUsername(loginDto.username);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -104,11 +101,7 @@ export class UsersService {
     const apiKey = this.generateApiKey();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days expiration
-    await this.databaseService.apiKeyRepository.save(
-      apiKey,
-      user.id,
-      expiresAt,
-    );
+    await this.apiKeyRepository.save(apiKey, user.id, expiresAt);
 
     // Remove password from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -121,7 +114,7 @@ export class UsersService {
    * Get user by ID
    */
   async findById(userId: string): Promise<User | undefined> {
-    return this.databaseService.userRepository.findById(userId);
+    return this.userRepository.findById(userId);
   }
 
   /**

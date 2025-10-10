@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Transfer } from '../transfer/entities/transfer.entity';
-import * as sqlite3 from 'sqlite3';
+import { DatabaseService } from '../common/database.service';
 
 /**
  * Transfer Repository
@@ -8,17 +8,10 @@ import * as sqlite3 from 'sqlite3';
  */
 @Injectable()
 export class TransferRepository {
-  constructor(
-    private readonly dbGet: (sql: string, params?: any[]) => Promise<any>,
-    private readonly dbAll: (sql: string, params?: any[]) => Promise<any[]>,
-    private readonly dbRun: (
-      sql: string,
-      params?: any[],
-    ) => Promise<sqlite3.RunResult>,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async save(transfer: Transfer): Promise<Transfer> {
-    await this.dbRun(
+    await this.databaseService.run(
       `
       INSERT OR REPLACE INTO transfers (id, from_user_id, to_user_id, amount, status, idempotency_key, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -40,7 +33,7 @@ export class TransferRepository {
   }
 
   async findByUserId(userId: string): Promise<Transfer[]> {
-    const rows = await this.dbAll(
+    const rows = await this.databaseService.all(
       'SELECT * FROM transfers WHERE from_user_id = ? OR to_user_id = ? ORDER BY created_at DESC',
       [userId, userId],
     );
@@ -48,7 +41,7 @@ export class TransferRepository {
   }
 
   async findByIdempotencyKey(key: string): Promise<Transfer | undefined> {
-    const row = await this.dbGet(
+    const row = await this.databaseService.get(
       'SELECT * FROM transfers WHERE idempotency_key = ?',
       [key],
     );

@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TopupController } from './topup.controller';
 import { TopupService } from './topup.service';
+import { UserRepository } from '../repositories/user.repository';
+import { TopupRepository } from '../repositories/topup.repository';
+import { TransactionRepository } from '../repositories/transaction.repository';
+import { ApiKeyRepository } from '../repositories/api-key.repository';
 import { DatabaseService } from '../common/database.service';
 import { MockDatabaseService } from '../common/test-helpers/mock-database.service';
 import { HttpService } from '@nestjs/axios';
@@ -14,6 +18,10 @@ describe('TopupController', () => {
       controllers: [TopupController],
       providers: [
         TopupService,
+        UserRepository,
+        TopupRepository,
+        TransactionRepository,
+        ApiKeyRepository,
         {
           provide: DatabaseService,
           useClass: MockDatabaseService,

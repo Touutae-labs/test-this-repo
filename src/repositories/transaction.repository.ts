@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Transaction } from '../balance/entities/transaction.entity';
-import * as sqlite3 from 'sqlite3';
+import { DatabaseService } from '../common/database.service';
 
 /**
  * Transaction Repository
@@ -8,16 +8,10 @@ import * as sqlite3 from 'sqlite3';
  */
 @Injectable()
 export class TransactionRepository {
-  constructor(
-    private readonly dbAll: (sql: string, params?: any[]) => Promise<any[]>,
-    private readonly dbRun: (
-      sql: string,
-      params?: any[],
-    ) => Promise<sqlite3.RunResult>,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async save(transaction: Transaction): Promise<Transaction> {
-    await this.dbRun(
+    await this.databaseService.run(
       `
       INSERT INTO transactions (id, user_id, type, amount, description, created_at)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -35,7 +29,7 @@ export class TransactionRepository {
   }
 
   async findByUserId(userId: string): Promise<Transaction[]> {
-    const rows = await this.dbAll(
+    const rows = await this.databaseService.all(
       'SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC',
       [userId],
     );

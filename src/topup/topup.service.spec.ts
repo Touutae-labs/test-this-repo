@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TopupService } from './topup.service';
+import { UserRepository } from '../repositories/user.repository';
+import { TopupRepository } from '../repositories/topup.repository';
+import { TransactionRepository } from '../repositories/transaction.repository';
 import { DatabaseService } from '../common/database.service';
 import { MockDatabaseService } from '../common/test-helpers/mock-database.service';
 import { HttpService } from '@nestjs/axios';
@@ -12,6 +15,9 @@ describe('TopupService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TopupService,
+        UserRepository,
+        TopupRepository,
+        TransactionRepository,
         {
           provide: DatabaseService,
           useClass: MockDatabaseService,

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '../common/database.service';
+import { UserRepository } from '../repositories/user.repository';
+import { TransactionRepository } from '../repositories/transaction.repository';
 import { Transaction } from './entities/transaction.entity';
 
 /**
@@ -8,7 +9,10 @@ import { Transaction } from './entities/transaction.entity';
  */
 @Injectable()
 export class BalanceService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly transactionRepository: TransactionRepository,
+  ) {}
 
   /**
    * Get user's current balance
@@ -16,7 +20,7 @@ export class BalanceService {
   async getBalance(
     userId: string,
   ): Promise<{ balance: number; userId: string }> {
-    const user = await this.databaseService.userRepository.findById(userId);
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -33,12 +37,12 @@ export class BalanceService {
    * OPTIONAL: This is a recommended feature
    */
   async getTransactionHistory(userId: string): Promise<Transaction[]> {
-    const user = await this.databaseService.userRepository.findById(userId);
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return this.databaseService.transactionRepository.findByUserId(userId);
+    return this.transactionRepository.findByUserId(userId);
   }
 }

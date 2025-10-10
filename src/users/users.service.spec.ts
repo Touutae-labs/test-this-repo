@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
+import { UserRepository } from '../repositories/user.repository';
+import { ApiKeyRepository } from '../repositories/api-key.repository';
 import { DatabaseService } from '../common/database.service';
 import { MockDatabaseService } from '../common/test-helpers/mock-database.service';
 
@@ -10,6 +12,8 @@ describe('UsersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
+        UserRepository,
+        ApiKeyRepository,
         {
           provide: DatabaseService,
           useClass: MockDatabaseService,

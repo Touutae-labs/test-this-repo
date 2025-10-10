@@ -5,7 +5,9 @@ import {
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseService } from '../common/database.service';
+import { UserRepository } from '../repositories/user.repository';
+import { TopupRepository } from '../repositories/topup.repository';
+import { TransactionRepository } from '../repositories/transaction.repository';
 import { CreateTopupDto } from './dto/create-topup.dto';
 import { Topup, TopupStatus } from './entities/topup.entity';
 import {
@@ -32,7 +34,9 @@ import { randomUUID } from 'crypto';
 @Injectable()
 export class TopupService {
   constructor(
-    private readonly databaseService: DatabaseService,
+    private readonly userRepository: UserRepository,
+    private readonly topupRepository: TopupRepository,
+    private readonly transactionRepository: TransactionRepository,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {}
@@ -46,7 +50,7 @@ export class TopupService {
     userId: string,
     createTopupDto: CreateTopupDto,
   ): Promise<Topup> {
-    const user = await this.databaseService.userRepository.findById(userId);
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -61,7 +65,7 @@ export class TopupService {
       updatedAt: new Date(),
     });
 
-    await this.databaseService.topupRepository.save(topup);
+    await this.topupRepository.save(topup);
 
     // CRITICAL: Implement external service integration
     // Process the top-up with external payment service
@@ -71,7 +75,7 @@ export class TopupService {
       // Update status to failed if external service call fails
       topup.status = TopupStatus.FAILED;
       topup.updatedAt = new Date();
-      await this.databaseService.topupRepository.save(topup);
+      await this.topupRepository.save(topup);
       throw error;
     }
 
@@ -222,7 +226,7 @@ export class TopupService {
     topupId: string,
     externalTransactionId: string,
   ): Promise<void> {
-    const topup = await this.databaseService.topupRepository.findById(topupId);
+    const topup = await this.topupRepository.findById(topupId);
 
     if (!topup) {
       throw new NotFoundException('Top-up not found');
@@ -232,9 +236,7 @@ export class TopupService {
       throw new BadRequestException('Top-up is not in pending status');
     }
 
-    const user = await this.databaseService.userRepository.findById(
-      topup.userId,
-    );
+    const user = await this.userRepository.findById(topup.userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -245,13 +247,13 @@ export class TopupService {
     const balanceBefore = user.balance;
     user.balance += topup.amount;
     user.updatedAt = new Date();
-    await this.databaseService.userRepository.save(user);
+    await this.userRepository.save(user);
 
     // Update topup status
     topup.status = TopupStatus.SUCCESS;
     topup.externalTransactionId = externalTransactionId;
     topup.updatedAt = new Date();
-    await this.databaseService.topupRepository.save(topup);
+    await this.topupRepository.save(topup);
 
     // Record transaction
     const transaction = new Transaction({
@@ -265,19 +267,19 @@ export class TopupService {
       metadata: { topupId, externalTransactionId },
       createdAt: new Date(),
     });
-    await this.databaseService.transactionRepository.save(transaction);
+    await this.transactionRepository.save(transaction);
   }
 
   /**
    * Get user's top-up history
    */
   async getTopupHistory(userId: string): Promise<Topup[]> {
-    const user = await this.databaseService.userRepository.findById(userId);
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return this.databaseService.topupRepository.findByUserId(userId);
+    return this.topupRepository.findByUserId(userId);
   }
 }

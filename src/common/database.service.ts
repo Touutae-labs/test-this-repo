@@ -3,15 +3,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as sqlite3 from 'sqlite3';
 import { promisify } from 'util';
-import { UserRepository } from '../repositories/user.repository';
-import { ApiKeyRepository } from '../repositories/api-key.repository';
-import { TransactionRepository } from '../repositories/transaction.repository';
-import { TopupRepository } from '../repositories/topup.repository';
-import { TransferRepository } from '../repositories/transfer.repository';
 
 /**
  * Database Service
- * Manages database connection and provides repository instances
+ * Manages SQLite database connection and provides database access methods
  */
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
@@ -19,13 +14,6 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   private dbRun: (sql: string, params?: any[]) => Promise<sqlite3.RunResult>;
   private dbGet: (sql: string, params?: any[]) => Promise<any>;
   private dbAll: (sql: string, params?: any[]) => Promise<any[]>;
-
-  // Repository instances
-  public userRepository: UserRepository;
-  public apiKeyRepository: ApiKeyRepository;
-  public transactionRepository: TransactionRepository;
-  public topupRepository: TopupRepository;
-  public transferRepository: TransferRepository;
 
   async onModuleInit() {
     // Ensure data directory exists
@@ -44,25 +32,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
     await this.initializeTables();
 
-    // Initialize repositories
-    this.userRepository = new UserRepository(this.db, this.dbGet, this.dbRun);
-    this.apiKeyRepository = new ApiKeyRepository(this.dbGet, this.dbRun);
-    this.transactionRepository = new TransactionRepository(
-      this.dbAll,
-      this.dbRun,
-    );
-    this.topupRepository = new TopupRepository(
-      this.dbGet,
-      this.dbAll,
-      this.dbRun,
-    );
-    this.transferRepository = new TransferRepository(
-      this.dbGet,
-      this.dbAll,
-      this.dbRun,
-    );
-
-    console.log('✅ SQLite3 database initialized with repositories');
+    console.log('✅ SQLite3 database initialized');
   }
 
   async onModuleDestroy() {
@@ -74,6 +44,34 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         });
       });
     }
+  }
+
+  /**
+   * Get the SQLite database instance
+   */
+  getDatabase(): sqlite3.Database {
+    return this.db;
+  }
+
+  /**
+   * Execute a SQL query that returns a single row
+   */
+  async get(sql: string, params?: any[]): Promise<any> {
+    return this.dbGet(sql, params);
+  }
+
+  /**
+   * Execute a SQL query that returns multiple rows
+   */
+  async all(sql: string, params?: any[]): Promise<any[]> {
+    return this.dbAll(sql, params);
+  }
+
+  /**
+   * Execute a SQL query that modifies data (INSERT, UPDATE, DELETE)
+   */
+  async run(sql: string, params?: any[]): Promise<sqlite3.RunResult> {
+    return this.dbRun(sql, params);
   }
 
   private async initializeTables(): Promise<void> {

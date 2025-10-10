@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { DatabaseService } from '../database.service';
+import { ApiKeyRepository } from '../../repositories/api-key.repository';
 
 /**
  * Authentication Guard
@@ -19,7 +19,7 @@ import { DatabaseService } from '../database.service';
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly apiKeyRepository: ApiKeyRepository) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -29,8 +29,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('API key is required');
     }
 
-    const userId =
-      await this.databaseService.apiKeyRepository.findUserIdByApiKey(apiKey);
+    const userId = await this.apiKeyRepository.findUserIdByApiKey(apiKey);
 
     if (!userId) {
       throw new UnauthorizedException('Invalid API key');

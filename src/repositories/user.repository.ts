@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../users/entities/user.entity';
-import * as sqlite3 from 'sqlite3';
+import { DatabaseService } from '../common/database.service';
 
 /**
  * User Repository
@@ -8,17 +8,10 @@ import * as sqlite3 from 'sqlite3';
  */
 @Injectable()
 export class UserRepository {
-  constructor(
-    private readonly db: sqlite3.Database,
-    private readonly dbGet: (sql: string, params?: any[]) => Promise<any>,
-    private readonly dbRun: (
-      sql: string,
-      params?: any[],
-    ) => Promise<sqlite3.RunResult>,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async save(user: User): Promise<User> {
-    await this.dbRun(
+    await this.databaseService.run(
       `
       INSERT OR REPLACE INTO users (id, username, password, balance, failed_login_attempts, locked_until, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -38,14 +31,18 @@ export class UserRepository {
   }
 
   async findById(id: string): Promise<User | undefined> {
-    const row = await this.dbGet('SELECT * FROM users WHERE id = ?', [id]);
+    const row = await this.databaseService.get(
+      'SELECT * FROM users WHERE id = ?',
+      [id],
+    );
     return row ? this.mapRowToUser(row) : undefined;
   }
 
   async findByUsername(username: string): Promise<User | undefined> {
-    const row = await this.dbGet('SELECT * FROM users WHERE username = ?', [
-      username,
-    ]);
+    const row = await this.databaseService.get(
+      'SELECT * FROM users WHERE username = ?',
+      [username],
+    );
     return row ? this.mapRowToUser(row) : undefined;
   }
 

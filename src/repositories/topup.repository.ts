@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Topup } from '../topup/entities/topup.entity';
-import * as sqlite3 from 'sqlite3';
+import { DatabaseService } from '../common/database.service';
 
 /**
  * Topup Repository
@@ -8,17 +8,10 @@ import * as sqlite3 from 'sqlite3';
  */
 @Injectable()
 export class TopupRepository {
-  constructor(
-    private readonly dbGet: (sql: string, params?: any[]) => Promise<any>,
-    private readonly dbAll: (sql: string, params?: any[]) => Promise<any[]>,
-    private readonly dbRun: (
-      sql: string,
-      params?: any[],
-    ) => Promise<sqlite3.RunResult>,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async save(topup: Topup): Promise<Topup> {
-    await this.dbRun(
+    await this.databaseService.run(
       `
       INSERT OR REPLACE INTO topups (id, user_id, amount, status, external_transaction_id, idempotency_key, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -38,12 +31,15 @@ export class TopupRepository {
   }
 
   async findById(id: string): Promise<Topup | undefined> {
-    const row = await this.dbGet('SELECT * FROM topups WHERE id = ?', [id]);
+    const row = await this.databaseService.get(
+      'SELECT * FROM topups WHERE id = ?',
+      [id],
+    );
     return row ? this.mapRowToTopup(row) : undefined;
   }
 
   async findByUserId(userId: string): Promise<Topup[]> {
-    const rows = await this.dbAll(
+    const rows = await this.databaseService.all(
       'SELECT * FROM topups WHERE user_id = ? ORDER BY created_at DESC',
       [userId],
     );
@@ -51,7 +47,7 @@ export class TopupRepository {
   }
 
   async findByIdempotencyKey(key: string): Promise<Topup | undefined> {
-    const row = await this.dbGet(
+    const row = await this.databaseService.get(
       'SELECT * FROM topups WHERE idempotency_key = ?',
       [key],
     );

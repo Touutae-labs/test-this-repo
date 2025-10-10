@@ -3,7 +3,9 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { DatabaseService } from '../common/database.service';
+import { UserRepository } from '../repositories/user.repository';
+import { TransferRepository } from '../repositories/transfer.repository';
+import { TransactionRepository } from '../repositories/transaction.repository';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { Transfer } from './entities/transfer.entity';
 import {
@@ -29,7 +31,9 @@ import { randomUUID } from 'crypto';
 @Injectable()
 export class TransferService {
   constructor(
-    private readonly databaseService: DatabaseService,
+    private readonly userRepository: UserRepository,
+    private readonly transferRepository: TransferRepository,
+    private readonly transactionRepository: TransactionRepository,
     // Uncomment when using idempotency:
     // private readonly idempotencyService: IdempotencyService,
   ) {}
@@ -84,14 +88,13 @@ export class TransferService {
     // TODO: Add idempotency check here using IdempotencyService
     // TODO: See example implementation in comments above
 
-    const fromUser =
-      await this.databaseService.userRepository.findById(fromUserId);
+    const fromUser = await this.userRepository.findById(fromUserId);
 
     if (!fromUser) {
       throw new NotFoundException('Sender not found');
     }
 
-    const toUser = await this.databaseService.userRepository.findByUsername(
+    const toUser = await this.userRepository.findByUsername(
       createTransferDto.recipientUsername,
     );
 
@@ -114,13 +117,13 @@ export class TransferService {
     const senderBalanceBefore = fromUser.balance;
     fromUser.balance -= createTransferDto.amount;
     fromUser.updatedAt = new Date();
-    await this.databaseService.userRepository.save(fromUser);
+    await this.userRepository.save(fromUser);
 
     // Add to recipient
     const recipientBalanceBefore = toUser.balance;
     toUser.balance += createTransferDto.amount;
     toUser.updatedAt = new Date();
-    await this.databaseService.userRepository.save(toUser);
+    await this.userRepository.save(toUser);
 
     // Create transfer record
     const transfer = new Transfer({
@@ -131,7 +134,7 @@ export class TransferService {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    await this.databaseService.transferRepository.save(transfer);
+    await this.transferRepository.save(transfer);
 
     // Record transactions for both users
     const senderTransaction = new Transaction({
@@ -145,7 +148,7 @@ export class TransferService {
       metadata: { transferId: transfer.id, recipientId: toUser.id },
       createdAt: new Date(),
     });
-    await this.databaseService.transactionRepository.save(senderTransaction);
+    await this.transactionRepository.save(senderTransaction);
 
     const recipientTransaction = new Transaction({
       id: randomUUID(),
@@ -158,7 +161,7 @@ export class TransferService {
       metadata: { transferId: transfer.id, senderId: fromUser.id },
       createdAt: new Date(),
     });
-    await this.databaseService.transactionRepository.save(recipientTransaction);
+    await this.transactionRepository.save(recipientTransaction);
 
     return transfer;
   }
@@ -205,12 +208,12 @@ export class TransferService {
    * Get user's transfer history
    */
   async getTransferHistory(userId: string): Promise<Transfer[]> {
-    const user = await this.databaseService.userRepository.findById(userId);
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return this.databaseService.transferRepository.findByUserId(userId);
+    return this.transferRepository.findByUserId(userId);
   }
 }
