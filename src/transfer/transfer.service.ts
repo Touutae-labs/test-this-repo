@@ -1,17 +1,17 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { CreateTransferDto } from './dto/create-transfer.dto';
-import { Transfer } from './entities/transfer.entity';
+import { DataSource, Repository } from 'typeorm';
 import {
   Transaction,
   TransactionType,
 } from '../balance/entities/transaction.entity';
 import { User } from '../users/entities/user.entity';
+import { CreateTransferDto } from './dto/create-transfer.dto';
+import { Transfer } from './entities/transfer.entity';
 
 /**
  * Transfer Service
@@ -90,7 +90,8 @@ export class TransferService {
     return await this.dataSource.transaction(async (manager) => {
       const fromUser = await manager.findOne(User, {
         where: { id: fromUserId },
-        lock: { mode: 'pessimistic_write' },
+        // SQLlite Doesn't Support this
+        // lock: { mode: 'pessimistic_write' },
       });
 
       if (!fromUser) {
@@ -99,7 +100,8 @@ export class TransferService {
 
       const toUser = await manager.findOne(User, {
         where: { username: createTransferDto.recipientUsername },
-        lock: { mode: 'pessimistic_write' },
+        // SQLlite Doesn't Support this
+        // lock: { mode: 'pessimistic_write' },
       });
 
       if (!toUser) {

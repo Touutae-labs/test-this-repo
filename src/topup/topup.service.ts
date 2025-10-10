@@ -230,7 +230,8 @@ export class TopupService {
     await this.dataSource.transaction(async (manager) => {
       const topup = await manager.findOne(Topup, {
         where: { id: topupId },
-        lock: { mode: 'pessimistic_write' },
+        // SQLlite Doesn't Support this
+        // lock: { mode: 'pessimistic_write' },
       });
 
       if (!topup) {
@@ -246,7 +247,8 @@ export class TopupService {
 
       const user = await manager.findOne(User, {
         where: { id: topup.userId },
-        lock: { mode: 'pessimistic_write' },
+        // SQLlite Doesn't Support this
+        // lock: { mode: 'pessimistic_write' },
       });
 
       if (!user) {
