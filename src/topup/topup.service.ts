@@ -16,7 +16,11 @@ import {
 } from '../balance/entities/transaction.entity';
 import { User } from '../users/entities/user.entity';
 import { CreateTopupDto } from './dto/create-topup.dto';
-import { ExternalTopupRequestDto, Topup, TopupStatus } from './entities/topup.entity';
+import {
+  ExternalTopupRequestDto,
+  Topup,
+  TopupStatus,
+} from './entities/topup.entity';
 
 /**
  * Top-up Service
@@ -100,16 +104,12 @@ export class TopupService {
 
       // Make API call to external service
       const response = await firstValueFrom(
-        this.httpService.post(
-          `${externalServiceUrl}/payments/topup`,
-          payload,
-          {
-            headers: {
-              'Authorization': `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
-            },
+        this.httpService.post(`${externalServiceUrl}/payments/topup`, payload, {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
           },
-        ),
+        }),
       );
 
       console.log('response', response.data);
@@ -153,24 +153,30 @@ export class TopupService {
     }
 
     // 3. Extract transaction details from webhook payload
-    const topupId = webhookData.referenceId;  // This is our topup.id
-    const externalTransactionId = webhookData.requestId;  // This is external service's ID
+    const topupId = webhookData.referenceId; // This is our topup.id
+    const externalTransactionId = webhookData.requestId; // This is external service's ID
 
     this.logger.log(
       `Processing webhook for topup ${topupId}, status: ${webhookData.status}, event: ${webhookData.event}`,
     );
 
     // 4. Update topup status based on webhook data
-    if (webhookData.status.toLowerCase() === TopupStatus.COMPLETED.toLowerCase()) {
+    if (
+      webhookData.status.toLowerCase() === TopupStatus.COMPLETED.toLowerCase()
+    ) {
       await this.completeTopup(topupId, externalTransactionId);
-    } else if (webhookData.status.toLowerCase() === TopupStatus.FAILED.toLowerCase()) {
+    } else if (
+      webhookData.status.toLowerCase() === TopupStatus.FAILED.toLowerCase()
+    ) {
       const topup = await this.topupRepository.findOne({
         where: { id: topupId },
       });
       if (topup) {
         topup.status = TopupStatus.FAILED;
         await this.topupRepository.save(topup);
-        this.logger.log(`Topup ${topupId} marked as failed: ${webhookData.statusMessage}`);
+        this.logger.log(
+          `Topup ${topupId} marked as failed: ${webhookData.statusMessage}`,
+        );
       }
     }
 
