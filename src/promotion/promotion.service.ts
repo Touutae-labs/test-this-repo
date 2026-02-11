@@ -4,6 +4,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PromotionLog } from './entities/promotion-log.entity';
 
+/**
+ * Promotion Service using rule-based engine
+ * 
+ * Note: This POC uses `any` types in several places for flexibility and rapid prototyping.
+ * In production, these should be replaced with proper interfaces:
+ * - PromotionEvent, PromotionFacts, PromotionResult, ActionParams, etc.
+ */
 @Injectable()
 export class PromotionService {
   private engine: Engine;
@@ -105,17 +112,9 @@ export class PromotionService {
     this.engine.addRule(vipUserRule);
     this.engine.addRule(happyHourRule);
 
-    // Register custom operators for adapters
-    this.registerCustomOperators();
-  }
-
-  /**
-   * Register custom operators that act as adapters
-   * These adapters allow Grule-like condition checking
-   */
-  private registerCustomOperators() {
-    // This is where you can add custom condition adapters
-    // The json-rules-engine allows custom operators to be registered
+    // NOTE: Custom operators can be registered here if needed
+    // Example: this.engine.addOperator('customCheck', (factValue, jsonValue) => {...})
+    // For this POC, we use the built-in operators (equal, greaterThanInclusive, etc.)
   }
 
   /**
