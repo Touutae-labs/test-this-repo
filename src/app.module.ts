@@ -5,6 +5,7 @@ import { BalanceModule } from './balance/balance.module';
 import { TopupModule } from './topup/topup.module';
 import { TransferModule } from './transfer/transfer.module';
 import { UsersModule } from './users/users.module';
+import { PromotionModule } from './promotion/promotion.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UsersModule } from './users/users.module';
     BalanceModule,
     TopupModule,
     TransferModule,
+    PromotionModule,
   ],
 })
 export class AppModule {}
