@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum TopupStatus {
   PENDING = 'PENDING',
@@ -6,7 +6,7 @@ export enum TopupStatus {
   FAILED = 'FAILED',
 }
 
-@Entity("topups")
+@Entity('topups')
 export class Topup {
   @PrimaryGeneratedColumn('uuid')
   id: string;

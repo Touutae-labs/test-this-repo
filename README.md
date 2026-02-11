@@ -34,7 +34,8 @@
 
 **Framework:** NestJS + TypeScript  
 **Database:** SQLite with TypeORM  
-**Authentication:** Custom API Key system
+**Authentication:** Custom API Key system  
+**Rule Engine:** json-rules-engine (for promotion system)
 
 ## Developer Notes & Design Decisions
 

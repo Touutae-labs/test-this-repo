@@ -3,9 +3,6 @@ import { Engine, Rule } from 'json-rules-engine';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PromotionLog } from './entities/promotion-log.entity';
-import { MinimumAmountCondition } from './adapters/minimum-amount.adapter';
-import { UserTierCondition } from './adapters/user-tier.adapter';
-import { TimeBasedCondition } from './adapters/time-based.adapter';
 
 @Injectable()
 export class PromotionService {
@@ -224,11 +221,7 @@ export class PromotionService {
    * Execute SIDE EFFECTS after actions
    * Side effects include logging, statistics, notifications, etc.
    */
-  private async executeSideEffects(
-    event: any,
-    facts: any,
-    actionResult: any,
-  ) {
+  private async executeSideEffects(event: any, facts: any, actionResult: any) {
     // Side Effect 1: Log the promotion application
     await this.logPromotionApplied(event, facts, actionResult);
 
@@ -242,11 +235,7 @@ export class PromotionService {
   /**
    * SIDE EFFECT: Log promotion application to database
    */
-  private async logPromotionApplied(
-    event: any,
-    facts: any,
-    actionResult: any,
-  ) {
+  private async logPromotionApplied(event: any, facts: any, actionResult: any) {
     const log = this.promotionLogRepository.create({
       userId: facts.userId,
       promotionType: event.type,
